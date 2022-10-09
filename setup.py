@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+# __author__ = "Albin TCHOPBA"
+# __copyright__ = "Copyright 2020 Albin TCHOPBA and contributors"
+# __credits__ = ["Albin TCHOPBA and contributors"]
+# __license__ = "GPL"
+# __version__ = "3"
+# __maintainer__ = "Albin TCHOPBA"
+# __email__ = "Albin TCHOPBA <atchopba @ gmail dot com"
+# __status__ = "Production"
 from io import open
 from os import path
 
@@ -12,22 +21,23 @@ with open(path.join(path_, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="scraping-jobs-web",
+    name="twilio-whatsapp-bot",
     version="0.0.1",
-    description="Scraping jobs on the web",
+    description="Twilio whatsapp chatbot!",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/atchopba/scraping-jobs-web",
+    url="https://github.com/atchopba/twilio-whatsapp-bot",
     author="atchopba",
     author_email="atchopba@gmail.com",
     classifiers=[
         "Development Status :: 0.0.1",
-        "Intended Audience :: End Users/Desktop",
+        "Intended Audience :: web API",
         "License :: GPL-3.0 License ",
         "Programming Language :: Python :: 3.7",
     ],
-    keywords="python scraping jobs apec indeed monster",
+    keywords="python twilio whatsapp chatbot",
     install_requires=["pytest>=5.4.3"],
     license="GPL-3.0 License",
     
 )
+
