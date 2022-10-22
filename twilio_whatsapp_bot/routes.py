@@ -2,8 +2,6 @@
 from flask import Blueprint, request, render_template
 import requests
 from twilio.twiml.messaging_response import MessagingResponse
-#from flask import Blueprint, request, make_response
-#from flask import render_template
 
 
 # Blueprint Configuration
@@ -24,6 +22,13 @@ def bot():
     resp = MessagingResponse()
     msg = resp.message()
     responded = False
+    if 'emprunt' in incoming_msg:
+        quote = 'Quel montant souhaitez-vous emprunter? \n'
+        quote += '1. 1 million \n'
+        quote += '2. 500 milles \n'
+        quote += '3. 200 milles \n'
+        msg.body(quote)
+        responded = True
     if 'quote' in incoming_msg:
         # return a quote
         r = requests.get('https://api.quotable.io/random')
