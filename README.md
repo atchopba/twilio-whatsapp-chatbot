@@ -27,8 +27,19 @@ The code:
 pip install -r requirement.txt
 ```
 
-* launch like: 
+## Launching: 
+
+
+### launching python code
 
 ```
 python wsgi.py
 ```
+
+### Launching ngrok
+
+```
+ngrok http 4000
+```
+
+*  Copy the https:// URL from the ngrok output and then paste it on the "When a message comes in" field.
