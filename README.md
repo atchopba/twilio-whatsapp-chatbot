@@ -24,7 +24,7 @@ The code:
 * install dependencies
 
 ```
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Launching: 
