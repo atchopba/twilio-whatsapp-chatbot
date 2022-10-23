@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
 from flask import Blueprint, request, render_template
 # import requests
 from twilio.twiml.messaging_response import MessagingResponse

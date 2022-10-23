@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
 from twilio_whatsapp_bot import create_app
 
 app = create_app()
