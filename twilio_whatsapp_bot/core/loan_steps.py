@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
+from twilio_whatsapp_bot.core.db.answers import Answers
 from typing import Any
 
 
 DEVISE = "Fcfa"
-BAD_ANSWER_STR = "mauvaise réponse"
+BAD_ANSWER_STR = "mauvais choix de réponse"
 user_responses = {}
+
 
 def step_response(incoming_msg: str) -> str:
     global current_step, user_responses
@@ -49,9 +51,13 @@ def step_response(incoming_msg: str) -> str:
         if response_.isnumeric(): 
             quote = BAD_ANSWER_STR
         else:
+            user_responses[current_step] = response_
             quote = "Merci pour vos réponses, M./Mme %s. Nous rentrerons en contact avec vous sous un délai de 48h maximum." % (user_responses[4].upper())
+            datas = (user_responses[1], user_responses[2], user_responses[3], user_responses[4], user_responses[5], user_responses[6])
+            # insert into database
+            Answers().insert_data(datas)
     else:
-        quote = "l'étape précédente n'a pas été enregistrée"
+        quote = "L'étape précédente n'a pas été enregistrée"
     return quote
 
 
