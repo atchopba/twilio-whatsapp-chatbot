@@ -4,7 +4,7 @@ from typing import Any
 import pymysql.cursors
 from collections import namedtuple
 
-from twilio_whatsapp_bot.config import Config
+from config import Config
 
 ResultSelectQuery = namedtuple("ResultSelectQuery", "result error_msg")
 
