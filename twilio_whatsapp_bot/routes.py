@@ -2,7 +2,7 @@
 from flask import Blueprint, request, render_template
 # import requests
 from twilio.twiml.messaging_response import MessagingResponse
-from .core.loan_steps import step_first, step_response
+from .helpers import step_first, step_response
 
 
 # Blueprint Configuration
