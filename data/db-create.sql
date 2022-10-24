@@ -13,5 +13,6 @@ CREATE TABLE IF NOT EXISTS `answers` (
   `question_4` VARCHAR(255) NOT NULL,
   `question_5` VARCHAR(255) NOT NULL,
   `question_6` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `cache_key_unique` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;`
