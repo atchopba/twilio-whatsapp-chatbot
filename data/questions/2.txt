@@ -1,0 +1,6 @@
+En combien de temps comptez-vous rembourser?
+1. 5 ans
+2. 4 ans
+3. 3 ans
+4. 2 ans
+5. 1 ans

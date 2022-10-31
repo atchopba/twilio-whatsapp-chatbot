@@ -1,0 +1,3 @@
+Avez-vous des garanties?
+1. Oui
+2. Non
