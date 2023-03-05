@@ -16,6 +16,8 @@ def step_question(index: int) -> str:
     tmp_file = str(index) + ".txt"
     if tmp_file == list_files[len(list_files)-2]:
         quote = get_file_content(PATHDIR_QUESTIONS + "/z.txt").replace("%s", user_responses[4].upper())
+        # store data in DB
+        Answers().insert_data(user_responses)
     else:
         current_step = index
         quote = get_file_content(PATHDIR_QUESTIONS + "/" + list_files[index])
