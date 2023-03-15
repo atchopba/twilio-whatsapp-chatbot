@@ -1,2 +1,0 @@
-Bonjour {}.
-Comment allez-vous?
