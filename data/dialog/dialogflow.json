@@ -1,0 +1,43 @@
+[
+    {
+        "id": "1",
+        "if_response_is": [
+            {
+                "operation": "eq",
+                "response": "y",
+                "questions": [
+                    {
+                        "id": "4",
+                        "if_response_is": []
+                    },
+                    {
+                        "id": "6",
+                        "if_response_is": []
+                    }
+                ]
+            },
+            {
+                "operation": "eq",
+                "response": "n",
+                "questions": [
+                    {
+                        "id": "3",
+                        "if_response_is": []
+                    },
+                    {
+                        "id": "7",
+                        "if_response_is": []
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "2",
+        "if_response_is": []
+    },
+    {
+        "id": "8",
+        "if_response_is": []
+    }
+]
