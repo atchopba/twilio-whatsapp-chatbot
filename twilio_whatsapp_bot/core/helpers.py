@@ -1,9 +1,8 @@
 #!/usr/bin/python
-from os import listdir
-from os.path import isfile, join
 from parse import parse
 from pathlib import Path
 from typing import Any
+import glob
 
 
 def get_data_from_url(received_message: str, index: str) -> str:
@@ -13,8 +12,8 @@ def get_data_from_url(received_message: str, index: str) -> str:
 
 
 def get_list_files(pathdir: str) -> Any:
-    onlyfiles = [f for f in listdir(pathdir) if isfile(join(pathdir, f))]
-    return onlyfiles
+    files = glob.glob(pathdir + '/**/*.txt', recursive=True)
+    return files
 
 
 def get_file_content(filepath: str) -> str:
