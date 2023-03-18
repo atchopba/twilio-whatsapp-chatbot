@@ -31,7 +31,6 @@ def step_response(incoming_msg: str) -> str:
     global current_step, user_responses, is_last_dialog
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
-    is_question = False
     # if question is a courtesy
     if current_step == 0 or "courtesy" in current_file:
         quote = step_in_courtesy(response_msg)
