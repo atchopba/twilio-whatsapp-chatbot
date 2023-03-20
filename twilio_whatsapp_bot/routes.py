@@ -2,8 +2,7 @@
 from flask import Blueprint, request, render_template
 # import requests
 from twilio.twiml.messaging_response import MessagingResponse
-from .core.api import step_question, step_response, PATHDIR_DIALOG
-from .core.helpers import get_file_content
+from .core.api import step_question, step_response
 
 global is_begin_dialog
 

@@ -1,11 +1,13 @@
 #!/usr/bin/python
+from config import Config
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file, check_probability_and_return_folder, count_word
 
 COURTESY_STR = "courtesy"
 QUESTION_STR = "question"
 
-BAD_ANSWER_STR = "mauvais choix de réponse"
+BAD_ANSWER_STR = "*"+ Config.BAD_ANSWER_STR + "*"
+
 PATHDIR_DIALOG = "./data/dialog"
 PATHDIR_QUESTIONS =  "./data/dialog/questions"
 
@@ -97,5 +99,5 @@ def step_in_question(response_msg: str) -> str:
             quote = step_question(current_step + 1)
         else:
             current_step = current_step
-            quote = BAD_ANSWER_STR
+            quote = BAD_ANSWER_STR + "\n\n" + get_file_content(current_file)
     return quote
