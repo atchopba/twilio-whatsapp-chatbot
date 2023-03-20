@@ -44,8 +44,9 @@ def step_response(incoming_msg: str) -> str:
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
+    
     # if question is a courtesy
-    if current_step == 0 or COURTESY_STR in current_file:
+    if (current_step == 0 or COURTESY_STR in current_file) and not is_change_folder:
         quote = step_in_courtesy(response_msg)
     # else
     elif QUESTION_STR in current_file:
@@ -59,7 +60,7 @@ def step_response(incoming_msg: str) -> str:
 
 
 def step_in_courtesy(response_msg: str) -> str:
-    global current_step, user_responses, list_files, is_change_folder
+    global current_step, user_responses, list_files, is_change_folder, is_question
     user_responses[current_step] = response_msg
     next_courtesy_content = get_file_content(list_files[current_step + 1])
     next_file = list_files[current_step + 1]
@@ -79,6 +80,7 @@ def step_in_courtesy(response_msg: str) -> str:
         current_step = 0
 
         next_courtesy_content = get_file_content(list_files[current_step])
+
     return next_courtesy_content
 
 
@@ -86,6 +88,7 @@ def step_in_question(response_msg: str) -> str:
     global current_step, user_responses
     quote = ""
     current_file = list_files[current_step]
+    
     # get nb of line of the current file
     nb_lines = len(get_file_content(current_file).split("\n"))
     # if file is on 1 line, get the answer and next question
