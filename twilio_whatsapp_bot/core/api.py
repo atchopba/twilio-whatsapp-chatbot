@@ -1,12 +1,16 @@
 #!/usr/bin/python
 from config import Config
+from twilio_whatsapp_bot.core.operations import execute_standard_operation
 from twilio_whatsapp_bot.core.db.answers import Answers
-from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file, check_probability_and_return_folder, count_word
+from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file, check_probability_and_return_folder, get_operations_in_bot_dialog, clean_question_content
+from typing import Any
+
 
 COURTESY_STR = "courtesy"
 QUESTION_STR = "question"
 
 BAD_ANSWER_STR = "*"+ Config.BAD_ANSWER_STR + "*"
+BAD_ANSWER_CHOICE_STR = "*"+ Config.BAD_ANSWER_CHOICE_STR + "*"
 
 PATHDIR_DIALOG = "./data/dialog"
 PATHDIR_QUESTIONS =  "./data/dialog/questions"
@@ -35,7 +39,7 @@ def step_question(index: int) -> str:
     else:
         is_last_dialog = False
         current_step = index
-        quote = get_file_content(list_files[index])
+        quote = clean_question_content(get_file_content(list_files[index]))
     return quote
 
 
@@ -88,19 +92,40 @@ def step_in_question(response_msg: str) -> str:
     global current_step, user_responses
     quote = ""
     current_file = list_files[current_step]
-    
+    current_file_content = get_file_content(current_file)
+    # get operations
+    tmp_ = get_operations_in_bot_dialog(current_file_content)
+    operations = tmp_['operations_found']
+    current_file_content = tmp_['msg']
+
     # get nb of line of the current file
-    nb_lines = len(get_file_content(current_file).split("\n"))
+    nb_lines = len(current_file_content.split("\n"))
     # if file is on 1 line, get the answer and next question
     if nb_lines == 1:
-        user_responses[current_step] = response_msg
-        quote = step_question(current_step + 1)
+        if not check_msg_validity(response_msg, operations):
+            current_step = current_step
+            quote = BAD_ANSWER_STR + "\n\n" + current_file_content
+        else:
+            user_responses[current_step] = response_msg
+            quote = step_question(current_step + 1)
     # nb line > 1, many possibilities of responses
     else:
         if response_msg.isnumeric() and 1 <= int(response_msg) <= nb_lines-1:
             user_responses[current_step] = response_msg
             quote = step_question(current_step + 1)
+        elif not check_msg_validity(response_msg, operations):
+            current_step = current_step
+            quote = BAD_ANSWER_STR + "\n\n" + current_file_content
         else:
             current_step = current_step
-            quote = BAD_ANSWER_STR + "\n\n" + get_file_content(current_file)
+            quote = BAD_ANSWER_CHOICE_STR + "\n\n" + current_file_content
     return quote
+
+
+def check_msg_validity(msg: str, operations: Any) -> bool:
+    is_valid = True
+    for op in operations:
+        is_valid = execute_standard_operation(op, msg)
+        if not is_valid: 
+            break
+    return is_valid

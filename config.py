@@ -16,3 +16,4 @@ class Config:
     MYSQL_CHARSET = "utf8mb4" # recommended value or utf8
 
     BAD_ANSWER_STR = environ.get("BAD_ANSWER_STR")
+    BAD_ANSWER_CHOICE_STR = environ.get("BAD_ANSWER_CHOICE_STR")

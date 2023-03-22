@@ -1,10 +1,13 @@
 #!/usr/bin/python
-from parse import parse
-from pathlib import Path
-from typing import Any
 import glob
 import json
+from parse import parse
+from pathlib import Path
+import re
+from typing import Any
 
+
+PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
 
 def get_data_from_url(received_message: str, index: str) -> str:
     template = 'SmsMessageSid={SmsMessageSid}&NumMedia={NumMedia}&ProfileName={ProfileName}&SmsSid={SmsSid}&WaId={WaId}&SmsStatus={SmsStatus}&Body={Body}&To={To}&NumSegments={NumSegments}&ReferralNumMedia={ReferralNumMedia}&MessageSid={MessageSid}&AccountSid={AccountSid}&From={From}&ApiVersion={ApiVersion}'
@@ -40,8 +43,6 @@ def check_probability_and_return_folder(sentence: str, data_array: Any, column_a
         list_A = data_[column_array].split("-")
         res = 0
         for key in list_A:
-            #print("list_A mot : ", key)
-            #print("list_B mot : ",word)
             res += 1 if key in sentence else 0
         if res_index < res:
             res_index = res
@@ -52,6 +53,22 @@ def check_probability_and_return_folder(sentence: str, data_array: Any, column_a
 
 
 def count_word(sentence: str, word: str) -> int:
-    import re
     a = re.split(r'\W', sentence)
     return a.count(word)
+
+
+def clean_question_content(msg: str) -> str:
+    return re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
+
+
+def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
+    pattern = PATTERN_OPERATION
+    operations_found = []
+    tmp_bot_dialog = bot_dialog
+    for op in re.findall(pattern, bot_dialog, re.MULTILINE):
+        operations_found.append(op)
+        tmp_bot_dialog = tmp_bot_dialog.replace(op, "")
+    return {
+        'operations_found': operations_found,
+        'msg': tmp_bot_dialog.replace("\n", "")
+    }
