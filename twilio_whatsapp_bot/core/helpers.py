@@ -7,7 +7,9 @@ import re
 from typing import Any
 
 
-PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
+#PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
+PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
+
 
 def get_data_from_url(received_message: str, index: str) -> str:
     template = 'SmsMessageSid={SmsMessageSid}&NumMedia={NumMedia}&ProfileName={ProfileName}&SmsSid={SmsSid}&WaId={WaId}&SmsStatus={SmsStatus}&Body={Body}&To={To}&NumSegments={NumSegments}&ReferralNumMedia={ReferralNumMedia}&MessageSid={MessageSid}&AccountSid={AccountSid}&From={From}&ApiVersion={ApiVersion}'
@@ -58,17 +60,41 @@ def count_word(sentence: str, word: str) -> int:
 
 
 def clean_question_content(msg: str) -> str:
-    return re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
+    tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
+    if tmp_ != msg:
+        tmp_ = tmp_.replace("\n", "")
+    return tmp_
 
 
 def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
-    pattern = PATTERN_OPERATION
-    operations_found = []
-    tmp_bot_dialog = bot_dialog
-    for op in re.findall(pattern, bot_dialog, re.MULTILINE):
-        operations_found.append(op)
-        tmp_bot_dialog = tmp_bot_dialog.replace(op, "")
+    operations_found = ""
+    for match in re.finditer(PATTERN_OPERATION, bot_dialog, re.MULTILINE):
+        operations_found = match.group()
+        break
     return {
-        'operations_found': operations_found,
-        'msg': tmp_bot_dialog.replace("\n", "")
+        'operations_found': json.loads(operations_found) if operations_found != "" else "",
+        'msg': clean_question_content(bot_dialog)
     }
+
+
+def check_number(msg_2_check: str) -> bool:
+    return msg_2_check is not None and msg_2_check.isnumeric()
+
+
+def check_str(msg_2_check: str) -> bool:
+    return isinstance(msg_2_check, str) and any(ele in msg_2_check for ele in ["a", "e", "i", "o", "u", "y"])
+
+
+def check_noun(msg_2_check: str) -> bool:
+    return check_str(msg_2_check)
+
+
+def check_phonenumber(msg_2_check: str) -> bool:
+    import phonenumbers
+    from phonenumbers import carrier
+    from phonenumbers.phonenumberutil import number_type
+    #
+    if not msg_2_check.startswith("+"):
+        msg_2_check = "+237" + msg_2_check
+    #
+    return carrier._is_mobile(number_type(phonenumbers.parse(msg_2_check)))

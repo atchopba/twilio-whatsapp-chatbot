@@ -1,2 +1,2 @@
 Vos nom(s) et prénom(s):
-[CHECK_NOUN]
+{"type": "in", "op":"check_noun"}

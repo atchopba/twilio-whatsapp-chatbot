@@ -1,0 +1,85 @@
+#!/usr/bin/python
+
+from twilio_whatsapp_bot.core.helpers import check_noun, check_number, check_phonenumber, check_str
+from typing import Any
+
+
+OP_TYPE_OUT = "out"
+OP_TYPE_IN = "in"
+
+OP_CHECK_NOUN = "check_noun"
+OP_CHECK_STR = "check_str"
+OP_CHECK_NUMBER = "check_number"
+OP_CHECK_PHONENUMBER = "check_phonenumber"
+OP_CHECK_CITY = "check_city"
+OP_SELECT = "select"
+
+
+class Operation(object):
+    
+    def __init__(self):
+        self.type_ = ""
+        self.op_ = ""
+        self.column_ = ""
+        pass
+
+    '''
+    Parse the json define in json
+    @raise Exception 
+    '''
+    def parse(self, json_) -> None:
+        self.type_ = json_["type"] if "type" in json_ else ""
+        self.op_ = json_["op"] if "op" in json_ else ""
+        self.column_ = json_["column"] if "column" in json_ else ""
+        #
+        if self.type_ is not None and self.type_ in (OP_TYPE_IN, OP_TYPE_OUT) and self.op_ is not None:
+            #   
+            if self.type_ == OP_TYPE_OUT and self.op_.startswith(OP_SELECT) and self.column_ is not None:
+                pass
+            #
+            elif self.type_ == OP_TYPE_IN and self.op_ in (OP_CHECK_CITY, OP_CHECK_NOUN, OP_CHECK_NUMBER, OP_CHECK_PHONENUMBER, OP_CHECK_STR):
+                pass
+            #
+            else:
+                raise Exception("{} is an unknown operation. Notify the system administrator", self.op_)
+        # 
+        else:
+            raise Exception("{} is an unknow operation type. Please notify the system administrator", self.type_)
+        #
+        return
+
+    '''
+    Run the operation
+    @return bool
+    '''
+    def run(self, json_: Any, msg_2_check: str) -> bool:
+        self.parse(json_)
+        return_ = False
+        if self.type_ == OP_TYPE_IN:
+            return_ = self.run_in(msg_2_check)
+        elif self.type_ == OP_TYPE_OUT:
+            return_ = self.run_out(msg_2_check)
+        #
+        return return_
+
+    
+    def run_in(self, msg_2_check) -> bool:
+        return_ = False
+        #
+        if self.op_ == OP_CHECK_PHONENUMBER:
+            return_ = check_phonenumber(msg_2_check)
+        elif self.op_ == OP_CHECK_CITY:
+            pass
+        elif self.op_ == OP_CHECK_NUMBER:
+            return_ = check_number(msg_2_check)
+        elif self.op_ == OP_CHECK_STR:
+            return_ = check_str(msg_2_check)
+        elif self.op_ == OP_CHECK_NOUN:
+            return_ = check_noun(msg_2_check)
+        #
+        return return_
+    
+
+    def run_out(self) -> bool:
+        return
+    

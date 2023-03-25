@@ -1,2 +1,2 @@
 Votre quartier de résidence / commune: 
-[CHECK_STR]
+{"type": "in", "op":"check_str"}

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from config import Config
-from twilio_whatsapp_bot.core.operations import execute_standard_operation
+from twilio_whatsapp_bot.core.utilies.operation import Operation
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file, check_probability_and_return_folder, get_operations_in_bot_dialog, clean_question_content
 from typing import Any
@@ -100,6 +100,7 @@ def step_in_question(response_msg: str) -> str:
 
     # get nb of line of the current file
     nb_lines = len(current_file_content.split("\n"))
+
     # if file is on 1 line, get the answer and next question
     if nb_lines == 1:
         if not check_msg_validity(response_msg, operations):
@@ -122,10 +123,6 @@ def step_in_question(response_msg: str) -> str:
     return quote
 
 
-def check_msg_validity(msg: str, operations: Any) -> bool:
-    is_valid = True
-    for op in operations:
-        is_valid = execute_standard_operation(op, msg)
-        if not is_valid: 
-            break
-    return is_valid
+def check_msg_validity(msg: str, operation: Any) -> bool:
+    tmp_ = Operation().run(operation, msg)
+    return tmp_
