@@ -25,7 +25,7 @@ is_change_folder = False
 
 
 def step_question(index: int) -> str:
-    global current_step, user_responses, is_last_dialog
+    global current_step, user_responses, is_last_dialog, list_files
     list_files_size = len(list_files)
     quote = ""
     # verify if the index is the last question
@@ -37,6 +37,10 @@ def step_question(index: int) -> str:
     elif index == list_files_size:
         is_last_dialog = True 
     else:
+        # if index = 0 => reload list_files to reinitialize dialog
+        if index == 0:
+            list_files = get_list_files(PATHDIR_DIALOG)
+        #
         is_last_dialog = False
         current_step = index
         quote = clean_question_content(get_file_content(list_files[index]))
