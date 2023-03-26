@@ -1,14 +1,17 @@
 [
 	{
-		"folder": "0",
+		"folder": "1",
+		"title": "service emprunt/prêt",
 		"words": "emprunt-pret-argent"
 	},
 	{
-		"folder": "1",
-		"words": "assurance-maison-vehicule"
+		"folder": "2",
+		"title": "service assurance habitat/véhicule",
+		"words": "assur-assurance-maison-piole-vehicule-bagnole"
 	},
 	{
-		"folder": "2",
-		"words": "mobilite-banque-region-province-ville"
+		"folder": "3",
+		"title": "service migration de compte",
+		"words": "mobilit-banque-region-région-province-ville"
 	}
 ]

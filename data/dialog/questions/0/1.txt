@@ -1,7 +1,0 @@
-Quel montant souhaitez-vous emprunter?
-1. 5 millions Fcfa
-2. 2 millions Fcfa
-3. 1 million Fcfa
-4. 500 000 Fcfa
-5. 200 000 Fcfa
-6. 100 000 Fcfa
