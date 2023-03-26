@@ -1,10 +1,13 @@
 #!/usr/bin/python
 from config import Config
+import logging
 from twilio_whatsapp_bot.core.utilies.operation import Operation
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file, check_probability_and_return_folder, get_operations_in_bot_dialog, clean_question_content
 from typing import Any
 
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 COURTESY_STR = "courtesy"
 QUESTION_STR = "question"
@@ -30,10 +33,12 @@ def step_question(index: int) -> str:
     quote = ""
     # verify if the index is the last question
     if index == list_files_size - 1:
+        logging.info("the last question of the dialog")
         is_last_dialog = True
         quote = get_file_content(list_files[list_files_size - 1]).replace("{}", user_responses[list_files_size - 2].upper())
         # store data in DB
         Answers().insert_data(user_responses)
+        logging.info("Saving OK for the data")
     elif index == list_files_size:
         is_last_dialog = True 
     else:
@@ -56,10 +61,12 @@ def step_response(incoming_msg: str) -> str:
     # if question is a courtesy
     if (current_step == 0 or COURTESY_STR in current_file) and not is_change_folder:
         quote = step_in_courtesy(response_msg)
+        logging.info("Dialog is a courtesy")
     # else
     elif QUESTION_STR in current_file:
         quote = step_in_question(response_msg)
         previous_step_str = QUESTION_STR
+        logging.info("Dialog is a question")
     
     return {
         "quote" : quote,
@@ -129,4 +136,5 @@ def step_in_question(response_msg: str) -> str:
 
 def check_msg_validity(msg: str, operation: Any) -> bool:
     tmp_ = Operation().run(operation, msg)
+    logging.info("Check validity of the user response (%s)", tmp_)
     return tmp_
