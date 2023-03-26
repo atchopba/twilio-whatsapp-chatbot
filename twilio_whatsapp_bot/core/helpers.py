@@ -35,23 +35,6 @@ def load_json_file(file_path: str = "./data/dialog/questions/0.json") -> Any:
     return json.load(open(file_path))
 
 
-def check_probability_and_return_folder(sentence: str, data_array: Any, column_array: str = "words") -> Any:
-    index = -1
-    res_index = -1
-    
-    for i in range(0, len(data_array)):
-        data_ = data_array[i]
-        list_A = data_[column_array].split("-")
-        res = 0
-        for key in list_A:
-            res += 1 if key in sentence else 0
-        if res > 0 and res_index < res:
-            res_index = res
-            index = int(data_["folder"])
-        
-    return index
-
-
 def count_word(sentence: str, word: str) -> int:
     a = re.split(r'\W', sentence)
     return a.count(word)
