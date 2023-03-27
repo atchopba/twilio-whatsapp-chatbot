@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from config import Config
 import glob
 import json
 from parse import parse
@@ -9,7 +10,7 @@ from typing import Any
 
 #PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
 PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
-
+DEFAULT_CALLING_CODE = Config.DEFAULT_CALLING_CODE
 
 def get_data_from_url(received_message: str, index: str) -> str:
     template = 'SmsMessageSid={SmsMessageSid}&NumMedia={NumMedia}&ProfileName={ProfileName}&SmsSid={SmsSid}&WaId={WaId}&SmsStatus={SmsStatus}&Body={Body}&To={To}&NumSegments={NumSegments}&ReferralNumMedia={ReferralNumMedia}&MessageSid={MessageSid}&AccountSid={AccountSid}&From={From}&ApiVersion={ApiVersion}'
@@ -76,6 +77,6 @@ def check_phonenumber(msg_2_check: str) -> bool:
     from phonenumbers.phonenumberutil import number_type
     #
     if not msg_2_check.startswith("+"):
-        msg_2_check = "+237" + msg_2_check
+        msg_2_check = DEFAULT_CALLING_CODE + msg_2_check
     #
     return carrier._is_mobile(number_type(phonenumbers.parse(msg_2_check)))
