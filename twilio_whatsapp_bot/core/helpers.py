@@ -8,8 +8,6 @@ import re
 from typing import Any
 
 
-#PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
-PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
 DEFAULT_CALLING_CODE = Config.DEFAULT_CALLING_CODE
 
 def get_data_from_url(received_message: str, index: str) -> str:
@@ -41,24 +39,6 @@ def count_word(sentence: str, word: str) -> int:
     return a.count(word)
 
 
-def clean_question_content(msg: str) -> str:
-    tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
-    if tmp_ != msg:
-        tmp_ = tmp_.replace("\n", "")
-    return tmp_
-
-
-def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
-    operations_found = ""
-    for match in re.finditer(PATTERN_OPERATION, bot_dialog, re.MULTILINE):
-        operations_found = match.group()
-        break
-    return {
-        'operations_found': json.loads(operations_found) if operations_found != "" else "",
-        'msg': clean_question_content(bot_dialog)
-    }
-
-
 def check_number(msg_2_check: str) -> bool:
     return msg_2_check is not None and msg_2_check.isnumeric()
 
@@ -79,4 +59,8 @@ def check_phonenumber(msg_2_check: str) -> bool:
     if not msg_2_check.startswith("+"):
         msg_2_check = DEFAULT_CALLING_CODE + msg_2_check
     #
-    return carrier._is_mobile(number_type(phonenumbers.parse(msg_2_check)))
+    try:
+        return_ = carrier._is_mobile(number_type(phonenumbers.parse(msg_2_check)))
+    except:
+        return_ = False
+    return return_

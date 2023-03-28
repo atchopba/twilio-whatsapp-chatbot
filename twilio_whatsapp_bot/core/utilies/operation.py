@@ -1,5 +1,6 @@
 #!/usr/bin/python
-
+import json
+import re
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, check_phonenumber, check_str
 from typing import Any
 
@@ -15,6 +16,28 @@ OP_CHECK_CITY = "check_city"
 OP_SELECT = "select"
 
 
+#PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
+PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
+
+
+def clean_question_content(msg: str) -> str:
+    tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
+    if tmp_ != msg:
+        tmp_ = tmp_.replace("\n", "")
+    return tmp_
+    
+
+def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
+    operations_found = ""
+    for match in re.finditer(PATTERN_OPERATION, bot_dialog, re.MULTILINE):
+        operations_found = match.group()
+        break
+    return {
+        'operations_found': json.loads(operations_found) if operations_found != "" else "",
+        'msg': clean_question_content(bot_dialog)
+    }
+
+
 class Operation(object):
     
     def __init__(self):
@@ -22,6 +45,7 @@ class Operation(object):
         self.op_ = ""
         self.column_ = ""
         pass
+
 
     '''
     Parse the json define in json
