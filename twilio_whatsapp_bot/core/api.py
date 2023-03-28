@@ -107,8 +107,8 @@ def step_in_courtesy(response_msg: str) -> str:
         if ("{}" in next_courtesy_content):
             next_courtesy_content = next_courtesy_content.replace("{}", response_msg)
         current_step += 1
-    logging.info("step in courtesy {%s}", response_msg)
     
+    logging.info("step in courtesy {%s}", response_msg)
     
     # check if the previous step is courtesy
     if (COURTESY_STR not in next_file and not is_change_folder) or is_words_question:
@@ -125,8 +125,7 @@ def step_in_courtesy(response_msg: str) -> str:
             current_step = 0
             is_words_question = False
             #
-            next_courtesy_content = get_file_content(list_files[current_step])
-            
+            next_courtesy_content = get_file_content(list_files[current_step])  
         #
         elif folder_index == -1 and question_ is not None and question_ != "":
             next_courtesy_content = question_
