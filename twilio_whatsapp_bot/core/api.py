@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from config import Config
 import logging
-from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_question_content, get_operations_in_bot_dialog
+from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_operations_from_question_content, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file
@@ -60,7 +60,7 @@ def step_question(index: int) -> str:
         current_step = index
         current_file = list_files[index]
         #
-        quote = clean_question_content(get_file_content(current_file))
+        quote = clean_operations_from_question_content(get_file_content(current_file))
     return quote
 
 

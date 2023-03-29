@@ -17,10 +17,11 @@ OP_SELECT = "select"
 
 
 #PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
-PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
+#PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
+PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
 
 
-def clean_question_content(msg: str) -> str:
+def clean_operations_from_question_content(msg: str) -> str:
     tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
     if tmp_ != msg:
         tmp_ = tmp_.replace("\n", "")
@@ -34,7 +35,7 @@ def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
         break
     return {
         'operations_found': json.loads(operations_found) if operations_found != "" else "",
-        'msg': clean_question_content(bot_dialog)
+        'msg': clean_operations_from_question_content(bot_dialog)
     }
 
 
