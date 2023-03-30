@@ -38,5 +38,8 @@ def bot():
         step_response_ = step_response(incoming_msg)
         msg.body(f"{step_response_['quote']}")
         is_begin_dialog = step_response_['is_last_dialog']
+        # add media
+        if step_response_["media"] is not None and step_response_["media"] != "":
+            msg.media(f"{step_response_['media']}")
     
     return str(resp)

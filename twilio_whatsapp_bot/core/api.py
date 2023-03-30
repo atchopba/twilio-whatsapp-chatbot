@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from config import Config
 import logging
+from twilio_whatsapp_bot.core.utilies.data import Data, clean_data_from_question_content, get_datas_in_bot_dialog
 from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_operations_from_question_content, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
@@ -69,14 +70,23 @@ def step_response(incoming_msg: str) -> str:
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
+    media_list = []
     
     # if question is a courtesy
     if ((current_step == 0 or COURTESY_STR in current_file) and not is_change_folder) or is_words_question:
         quote = step_in_courtesy(response_msg)
+        #
+        media_list = get_datas_in_bot_dialog(quote)
+        quote = clean_data_from_question_content(quote)
+        #
         logging.info("Dialog is a courtesy")
     # else
     elif QUESTION_STR in current_file and not is_global_question:
         quote = step_in_question(response_msg) 
+        #
+        media_list = get_datas_in_bot_dialog(quote)
+        quote = clean_data_from_question_content(quote)
+        #
         previous_step_str = QUESTION_STR
         logging.info("Dialog is a question")
     # if it is global question case
@@ -91,7 +101,8 @@ def step_response(incoming_msg: str) -> str:
     #
     return {
         "quote" : quote,
-        "is_last_dialog" : is_last_dialog
+        "is_last_dialog" : is_last_dialog,
+        "media": media_list["datas_found"][0]["url"] if media_list is not None and "datas_found" in media_list and media_list["datas_found"] is not None and len(media_list["datas_found"]) > 0 else ""
     }
 
 
