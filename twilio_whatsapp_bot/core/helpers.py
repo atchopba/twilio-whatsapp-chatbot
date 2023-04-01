@@ -30,6 +30,10 @@ def get_file_content(filepath: str) -> str:
     return file_content
 
 
+def replace_assistant_in_content(file_content: str, assistant: str) -> str:
+    return file_content.replace("{ASSISTANT}", assistant)
+
+
 def check_content_is_2_msg(file_content: str) -> Any:
     tokens_ = file_content.split("|")
     #

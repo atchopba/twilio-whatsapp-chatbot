@@ -5,7 +5,7 @@ from twilio_whatsapp_bot.core.utilies.data import Data, clean_data_from_question
 from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_operations_from_question_content, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
-from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file
+from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file, replace_assistant_in_content
 from typing import Any
 
 
@@ -17,6 +17,8 @@ QUESTION_STR = "question"
 BAD_ANSWER_STR = "*"+ Config.BAD_ANSWER_STR + "*"
 BAD_ANSWER_CHOICE_STR = "*"+ Config.BAD_ANSWER_CHOICE_STR + "*"
 PROPOSE_ALL_QUESTIONS_FOLDER_STR = "_"+ Config.PROPOSE_ALL_QUESTIONS_FOLDER_STR + "_"
+
+DIALOG_ASSISTANT = Config.DIALOG_ASSISTANT if Config.DIALOG_ASSISTANT is not None else "David"
 
 PATHDIR_DIALOG = "./data/dialog"
 PATHDIR_QUESTIONS =  "./data/dialog/questions"
@@ -99,7 +101,10 @@ def step_response(incoming_msg: str) -> str:
         else:
             quote = BAD_ANSWER_CHOICE_STR + "\n\n" + propose_all_questions_folder
     #
+    quote = replace_assistant_in_content(quote, DIALOG_ASSISTANT)
+    #
     check_content_msg = check_content_is_2_msg(quote)
+    #
     return {
         "tokens" : check_content_msg["tokens"],
         "is_in_2_msg": check_content_msg["is_in_2_msg"],
