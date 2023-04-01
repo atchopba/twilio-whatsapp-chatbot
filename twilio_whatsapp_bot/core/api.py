@@ -5,7 +5,7 @@ from twilio_whatsapp_bot.core.utilies.data import Data, clean_data_from_question
 from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_operations_from_question_content, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
-from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file, replace_assistant_in_content
+from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file, remove_accents, replace_assistant_in_content
 from typing import Any
 
 
@@ -132,7 +132,7 @@ def step_in_courtesy(response_msg: str) -> str:
     if (COURTESY_STR not in next_file and not is_change_folder) or is_words_question:
         is_change_folder = True
         folder_ = Folder(load_json_file())
-        response_question = folder_.check_probability_and_return_folder(response_msg)
+        response_question = folder_.check_probability_and_return_folder(remove_accents(response_msg))
         folder_index = response_question["folder_index"]
         question_ = response_question["question"]
  

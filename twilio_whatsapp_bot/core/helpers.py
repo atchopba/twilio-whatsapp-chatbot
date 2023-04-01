@@ -6,6 +6,7 @@ from parse import parse
 from pathlib import Path
 import re
 from typing import Any
+from unidecode import unidecode
 
 
 DEFAULT_CALLING_CODE = Config.DEFAULT_CALLING_CODE
@@ -28,6 +29,10 @@ def get_file_content(filepath: str) -> str:
     except Exception as exception:
         print("Error occurs while opening file : ", exception)
     return file_content
+
+
+def remove_accents(msg: str) -> str:
+    return unidecode(msg)
 
 
 def replace_assistant_in_content(file_content: str, assistant: str) -> str:
