@@ -30,6 +30,18 @@ def get_file_content(filepath: str) -> str:
     return file_content
 
 
+def check_content_is_2_msg(file_content: str) -> Any:
+    tokens_ = file_content.split("|")
+    #
+    for i in range(0, len(tokens_)):
+        if tokens_[i].strip() != "":
+            tokens_[i] = tokens_[i].strip()
+    return {
+        "is_in_2_msg": len(tokens_) > 1,
+        "tokens": tokens_
+    }
+
+
 def load_json_file(file_path: str = "./data/dialog/questions/0.json") -> Any:
     return json.load(open(file_path))
 

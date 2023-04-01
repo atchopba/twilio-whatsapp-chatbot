@@ -36,10 +36,20 @@ def bot():
     
     else:
         step_response_ = step_response(incoming_msg)
-        msg.body(f"{step_response_['quote']}")
+        msg_tokens = step_response_['tokens']
+        msg.body(f"{msg_tokens[0]}")
         is_begin_dialog = step_response_['is_last_dialog']
+        #
+        msg_list = []
+        #
+        for i in range (1, len(msg_tokens)):
+            print("==> pass here")
+            msg_list.append(resp.message())
+            msg_list[i-1].body(f"{msg_tokens[i]}")
+
         # add media
         if step_response_["media"] is not None and step_response_["media"] != "":
-            msg.media(f"{step_response_['media']}")
-    
+            msg_2 = resp.message()
+            msg_2.media(f"{step_response_['media']}")
+
     return str(resp)

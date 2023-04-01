@@ -5,7 +5,7 @@ from twilio_whatsapp_bot.core.utilies.data import Data, clean_data_from_question
 from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_operations_from_question_content, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
-from twilio_whatsapp_bot.core.helpers import get_file_content, get_list_files, load_json_file
+from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file
 from typing import Any
 
 
@@ -99,8 +99,10 @@ def step_response(incoming_msg: str) -> str:
         else:
             quote = BAD_ANSWER_CHOICE_STR + "\n\n" + propose_all_questions_folder
     #
+    check_content_msg = check_content_is_2_msg(quote)
     return {
-        "quote" : quote,
+        "tokens" : check_content_msg["tokens"],
+        "is_in_2_msg": check_content_msg["is_in_2_msg"],
         "is_last_dialog" : is_last_dialog,
         "media": media_list["datas_found"][0]["url"] if media_list is not None and "datas_found" in media_list and media_list["datas_found"] is not None and len(media_list["datas_found"]) > 0 else ""
     }
