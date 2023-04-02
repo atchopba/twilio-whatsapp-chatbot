@@ -43,13 +43,17 @@ def bot():
         msg_list = []
         #
         for i in range (1, len(msg_tokens)):
-            print("==> pass here")
             msg_list.append(resp.message())
             msg_list[i-1].body(f"{msg_tokens[i]}")
 
         # add media
         if step_response_["media"] is not None and step_response_["media"] != "":
-            msg_2 = resp.message()
-            msg_2.media(f"{step_response_['media']}")
+            msg_media_list = []
+            i = 0
+            for media_ in step_response_["media"]:
+                if media_["url"] is not None and media_["url"] != "":
+                    msg_media_list.append(resp.message())
+                    msg_media_list[i].media(f"{media_['url']}")
+                    i += 1
 
     return str(resp)

@@ -109,7 +109,7 @@ def step_response(incoming_msg: str) -> str:
         "tokens" : check_content_msg["tokens"],
         "is_in_2_msg": check_content_msg["is_in_2_msg"],
         "is_last_dialog" : is_last_dialog,
-        "media": media_list["datas_found"][0]["url"] if media_list is not None and "datas_found" in media_list and media_list["datas_found"] is not None and len(media_list["datas_found"]) > 0 else ""
+        "media": media_list["datas_found"] if media_list is not None and "datas_found" in media_list and media_list["datas_found"] is not None and len(media_list["datas_found"]) > 0 else []
     }
 
 

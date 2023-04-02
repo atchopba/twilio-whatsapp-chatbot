@@ -4,7 +4,7 @@ from typing import Any
 import re
 
 
-PATTERN_DATA = r"^\{\"data\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_\/\:\.]*\")+\}$"
+PATTERN_DATA = r"^\{\"data\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-zA-Z0-9*\s'=_\/\:\.,-]*\")+\}$"
 
 TYPE_IMG_GIF = "image/gif"
 TYPE_IMG_JPEG = "image/jpeg"
