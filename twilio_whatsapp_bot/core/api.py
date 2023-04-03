@@ -34,10 +34,13 @@ is_change_folder = False
 is_global_question = False
 is_words_question = False
 nb_folder_question = 0
+nb_rows_run_out = -1
+is_run_out = False
+run_out_question_part = ""
 
 
 def step_question(index: int) -> str:
-    global current_step, current_file, is_change_folder, is_global_question, is_last_dialog, list_files, user_responses
+    global current_step, current_file, is_change_folder, is_global_question, is_last_dialog, is_run_out, list_files, nb_rows_run_out, run_out_question_part, user_responses
     list_files_size = len(list_files)
     quote = ""
     # verify if the index is the last question
@@ -63,7 +66,16 @@ def step_question(index: int) -> str:
         current_step = index
         current_file = list_files[index]
         #
-        quote = clean_operations_from_question_content(get_file_content(current_file))
+        tmp_ = get_operations_in_bot_dialog(get_file_content(current_file))
+        quote = tmp_["msg"]
+        if "operations_found" in tmp_ and tmp_["operations_found"] is not None and tmp_["operations_found"] != "":
+            run_out_list = Operation().run_out(tmp_["operations_found"])
+            nb_rows_run_out= len(run_out_list)
+            #
+            is_run_out = True
+            run_out_question_part = "\n" + "\n".join(run_out_list)
+            quote += run_out_question_part #clean_operations_from_question_content(get_file_content(current_file))
+
     return quote
 
 
@@ -161,7 +173,7 @@ def step_in_courtesy(response_msg: str) -> str:
 
 
 def step_in_question(response_msg: str) -> str:
-    global current_step, is_words_question, user_responses
+    global current_step, is_words_question, is_run_out, nb_rows_run_out, run_out_question_part, user_responses
     quote = ""
     current_file = list_files[current_step]
     current_file_content = get_file_content(current_file)
@@ -176,18 +188,26 @@ def step_in_question(response_msg: str) -> str:
 
     # if file is on 1 line, get the answer and next question
     if nb_lines == 1:
-        if not check_msg_validity(response_msg, operations):
+        if Operation().is_run_in(operations) and not check_msg_validity(response_msg, operations):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
+        elif Operation().is_run_out(operations) and not (1 <= int(response_msg) <= nb_rows_run_out):
+            current_step = current_step
+            quote = BAD_ANSWER_STR + "\n\n" + current_file_content + run_out_question_part
         else:
             user_responses[current_step] = response_msg
             quote = step_question(current_step + 1)
     # nb line > 1, many possibilities of responses
     else:
-        if response_msg.isnumeric() and 1 <= int(response_msg) <= nb_lines-1:
+        # if made by request
+        if is_run_out and 1 <= int(response_msg) <= nb_rows_run_out:
+            is_run_out = False
             user_responses[current_step] = response_msg
             quote = step_question(current_step + 1)
-        elif operations != "" and operations is not None and not check_msg_validity(response_msg, operations):
+        elif response_msg.isnumeric() and 1 <= int(response_msg) <= nb_lines-1:
+            user_responses[current_step] = response_msg
+            quote = step_question(current_step + 1)
+        elif operations != "" and operations is not None and Operation().is_run_in(operations) and not check_msg_validity(response_msg, operations):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
         elif is_words_question:
@@ -201,6 +221,6 @@ def step_in_question(response_msg: str) -> str:
 
 
 def check_msg_validity(msg: str, operation: Any) -> bool:
-    tmp_ = Operation().run(operation, msg)
+    tmp_ = Operation().run_in(operation, msg)
     logging.info("Check validity of the user response (%s)", tmp_)
     return tmp_

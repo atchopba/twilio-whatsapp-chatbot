@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import json
 import re
+from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, check_phonenumber, check_str
 from typing import Any
 
@@ -18,7 +19,7 @@ OP_SELECT = "select"
 
 #PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
 #PATTERN_OPERATION = r"^\{\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
-PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-z*\s_]*\"\:\s*\"[a-z*\s'=_]*\")+\}$"
+PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"
 
 
 def clean_operations_from_question_content(msg: str) -> str:
@@ -30,6 +31,7 @@ def clean_operations_from_question_content(msg: str) -> str:
 
 def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
     operations_found = ""
+    bot_dialog = bot_dialog.lower()
     for match in re.finditer(PATTERN_OPERATION, bot_dialog, re.MULTILINE):
         operations_found = match.group()
         break
@@ -81,14 +83,23 @@ class Operation(object):
         self.parse(json_)
         return_ = False
         if self.type_ == OP_TYPE_IN:
-            return_ = self.run_in(msg_2_check)
+            return_ = self.run_in(json_, msg_2_check)
         elif self.type_ == OP_TYPE_OUT:
-            return_ = self.run_out(msg_2_check)
+            return_ = self.run_out(json_)
         #
         return return_
 
+
+    def is_run_in(self, json_: Any) -> bool:
+        return "op" in json_ and json_["type"] == OP_TYPE_IN
+
+
+    def is_run_out(self, json_: Any) -> bool:
+        return "op" in json_ and json_["type"] == OP_TYPE_OUT
     
-    def run_in(self, msg_2_check) -> bool:
+    
+    def run_in(self, json_: Any, msg_2_check) -> bool:
+        self.parse(json_)
         return_ = False
         #
         if self.op_ == OP_CHECK_PHONENUMBER:
@@ -105,6 +116,13 @@ class Operation(object):
         return return_
     
 
-    def run_out(self) -> bool:
-        return
+    def run_out(self, json_: Any) -> Any:
+        self.parse(json_)
+        result_ = DB().select(json_["op"])
+        return_ = []
+        i = 1
+        for r in result_:
+            return_.append(str(i) + ". "+ r[json_["column"]])
+            i += 1
+        return return_
     

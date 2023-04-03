@@ -64,14 +64,15 @@ class DB(object):
         '''
         self.connect()
         error_msg = ""
+        result = []
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(r)
                 result = cursor.fetchall() if select_one is False else [cursor.fetchone()]
-        except:
+        except Exception as e:
             error_msg = "Erreur lors de l'execution : "
         self.deconnect()
-        return ResultSelectQuery(result, error_msg)
+        return result
     
     
     def is_result(self, r):
