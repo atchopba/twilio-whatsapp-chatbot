@@ -31,3 +31,15 @@ CREATE TABLE IF NOT EXISTS `answers` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `cache_key_unique` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+# create table `time_slots`
+DROP TABLE IF EXISTS `time_slots`;
+CREATE TABLE IF NOT EXISTS `time_slots` (
+  `id` INT AUTO_INCREMENT,
+  `being_time` VARCHAR(255) NOT NULL,
+  `end_time` VARCHAR(255) NOT NULL,
+  UNIQUE KEY `cache_key_unique` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO `time_slots` (`begin_time`, `end_time`) VALUES ('07h', '12h');
+INSERT INTO `time_slots` (`begin_time`, `end_time`) VALUES ('14h', '19h');
