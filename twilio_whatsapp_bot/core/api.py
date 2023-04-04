@@ -1,8 +1,8 @@
 #!/usr/bin/python
 from config import Config
 import logging
-from twilio_whatsapp_bot.core.utilies.data import Data, clean_data_from_question_content, get_datas_in_bot_dialog
-from twilio_whatsapp_bot.core.utilies.operation import Operation, clean_operations_from_question_content, get_operations_in_bot_dialog
+from twilio_whatsapp_bot.core.utilies.data import clean_data_from_question_content, get_datas_in_bot_dialog
+from twilio_whatsapp_bot.core.utilies.operation import Operation, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file, remove_accents, replace_assistant_in_content
@@ -74,7 +74,7 @@ def step_question(index: int) -> str:
             #
             is_run_out = True
             run_out_question_part = "\n" + "\n".join(run_out_list)
-            quote += run_out_question_part #clean_operations_from_question_content(get_file_content(current_file))
+            quote += run_out_question_part
 
     return quote
 
