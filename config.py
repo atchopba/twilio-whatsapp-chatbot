@@ -15,6 +15,8 @@ class Config:
     MYSQL_DB = environ.get("MYSQL_DB")
     MYSQL_CHARSET = "utf8mb4" # recommended value or utf8
 
+    PATH_TO_DIALOG = environ.get("PATH_TO_DIALOG")
+
     BAD_ANSWER_STR = environ.get("BAD_ANSWER_STR")
     BAD_ANSWER_CHOICE_STR = environ.get("BAD_ANSWER_CHOICE_STR")
 

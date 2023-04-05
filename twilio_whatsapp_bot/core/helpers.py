@@ -2,6 +2,7 @@
 from config import Config
 import glob
 import json
+import os
 from parse import parse
 from pathlib import Path
 import re
@@ -51,6 +52,10 @@ def check_content_is_2_msg(file_content: str) -> Any:
     }
 
 
+def check_folder_exists(path_: str) -> bool:
+    return os.path.exists(path_) and len(os.listdir(path_)) > 1
+
+
 def load_json_file(file_path: str = "./data/dialog/questions/0.json") -> Any:
     return json.load(open(file_path))
 
@@ -58,6 +63,10 @@ def load_json_file(file_path: str = "./data/dialog/questions/0.json") -> Any:
 def count_word(sentence: str, word: str) -> int:
     a = re.split(r'\W', sentence)
     return a.count(word)
+
+
+def count_nb_folders(path_: str = "./data/dialog/questions/") -> int:
+    return len(next(os.walk(path_))[1])
 
 
 def check_number(msg_2_check: str) -> bool:

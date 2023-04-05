@@ -5,7 +5,7 @@ from twilio_whatsapp_bot.core.utilies.data import clean_data_from_question_conte
 from twilio_whatsapp_bot.core.utilies.operation import Operation, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
-from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, get_file_content, get_list_files, load_json_file, remove_accents, replace_assistant_in_content
+from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, check_folder_exists, get_file_content, get_list_files, load_json_file, remove_accents, replace_assistant_in_content
 from typing import Any
 
 
@@ -20,12 +20,12 @@ PROPOSE_ALL_QUESTIONS_FOLDER_STR = "_"+ Config.PROPOSE_ALL_QUESTIONS_FOLDER_STR 
 
 DIALOG_ASSISTANT = Config.DIALOG_ASSISTANT if Config.DIALOG_ASSISTANT is not None else "David"
 
-PATHDIR_DIALOG = "./data/dialog"
-PATHDIR_QUESTIONS =  "./data/dialog/questions"
+PATHDIR_TO_DIALOG = Config.PATH_TO_DIALOG if check_folder_exists(Config.PATH_TO_DIALOG) else "./data/dialog"
+PATHDIR_TO_QUESTIONS = Config.PATH_TO_DIALOG + "//questions"
 
 user_responses = {}
 
-list_files = get_list_files(PATHDIR_DIALOG)
+list_files = get_list_files(PATHDIR_TO_DIALOG)
 is_last_dialog = False
 
 previous_step_str = "courtesy"
@@ -58,7 +58,7 @@ def step_question(index: int) -> str:
     else:
         # if index = 0 => reload list_files to reinitialize dialog
         if index == 0 and not is_global_question:
-            list_files = get_list_files(PATHDIR_DIALOG)
+            list_files = get_list_files(PATHDIR_TO_DIALOG)
         else:
             is_global_question = False
         #
@@ -108,7 +108,7 @@ def step_response(incoming_msg: str) -> str:
         logging.info("Dialog is global folder")
         #
         if incoming_msg.isnumeric() and 1 <= int(incoming_msg) <= nb_folder_question:
-            list_files = get_list_files(PATHDIR_QUESTIONS + "/" + str(incoming_msg))       
+            list_files = get_list_files(PATHDIR_TO_QUESTIONS + "/" + str(incoming_msg))       
             quote = step_question(0)
         else:
             quote = BAD_ANSWER_CHOICE_STR + "\n\n" + propose_all_questions_folder
@@ -143,7 +143,7 @@ def step_in_courtesy(response_msg: str) -> str:
     # check if the previous step is courtesy
     if (COURTESY_STR not in next_file and not is_change_folder) or is_words_question:
         is_change_folder = True
-        folder_ = Folder(load_json_file())
+        folder_ = Folder(load_json_file(PATHDIR_TO_QUESTIONS + "//0.json"))
         response_question = folder_.check_probability_and_return_folder(remove_accents(response_msg))
         folder_index = response_question["folder_index"]
         question_ = response_question["question"]
@@ -151,7 +151,7 @@ def step_in_courtesy(response_msg: str) -> str:
         # if the user's response matches a directory
         if folder_index > -1 and (question_ is None or question_ == ""):
             # reload list_files
-            list_files = get_list_files(PATHDIR_QUESTIONS + "/" + str(folder_index))
+            list_files = get_list_files(PATHDIR_TO_QUESTIONS + "/" + str(folder_index))
             current_step = 0
             is_words_question = False
             #
