@@ -21,7 +21,7 @@ PROPOSE_ALL_QUESTIONS_FOLDER_STR = "_"+ Config.PROPOSE_ALL_QUESTIONS_FOLDER_STR 
 DIALOG_ASSISTANT = Config.DIALOG_ASSISTANT if Config.DIALOG_ASSISTANT is not None else "David"
 
 PATHDIR_TO_DIALOG = Config.PATH_TO_DIALOG if check_folder_exists(Config.PATH_TO_DIALOG) else "./data/dialog"
-PATHDIR_TO_QUESTIONS = Config.PATH_TO_DIALOG + "//questions"
+PATHDIR_TO_QUESTIONS = PATHDIR_TO_DIALOG + "//questions"
 
 user_responses = {}
 
