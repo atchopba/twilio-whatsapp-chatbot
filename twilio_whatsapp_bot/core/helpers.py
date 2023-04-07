@@ -94,3 +94,7 @@ def check_phonenumber(msg_2_check: str) -> bool:
     except:
         return_ = False
     return return_
+
+
+def chech_email(email_adr: str) -> bool:
+    return True if re.match(r"[^@]+@[^@]+\.[^@]+", email_adr) else False

@@ -2,7 +2,7 @@
 import json
 import re
 from twilio_whatsapp_bot.core.db.db import DB
-from twilio_whatsapp_bot.core.helpers import check_noun, check_number, check_phonenumber, check_str
+from twilio_whatsapp_bot.core.helpers import check_noun, check_number, check_phonenumber, check_str, chech_email
 from typing import Any
 
 
@@ -14,7 +14,10 @@ OP_CHECK_STR = "check_str"
 OP_CHECK_NUMBER = "check_number"
 OP_CHECK_PHONENUMBER = "check_phonenumber"
 OP_CHECK_CITY = "check_city"
+OP_CHECK_EMAIL = "check_email"
 OP_SELECT = "select"
+
+OP_LIST = {OP_CHECK_CITY, OP_CHECK_NOUN, OP_CHECK_NUMBER, OP_CHECK_PHONENUMBER, OP_CHECK_STR, OP_CHECK_EMAIL}
 
 
 #PATTERN_OPERATION = r"^\[[a-zA-Z]{3,10}\_[a-zA-Z]{3,20}\]$"
@@ -64,7 +67,7 @@ class Operation(object):
             if self.type_ == OP_TYPE_OUT and self.op_.startswith(OP_SELECT) and self.column_ is not None:
                 pass
             #
-            elif self.type_ == OP_TYPE_IN and self.op_ in (OP_CHECK_CITY, OP_CHECK_NOUN, OP_CHECK_NUMBER, OP_CHECK_PHONENUMBER, OP_CHECK_STR):
+            elif self.type_ == OP_TYPE_IN and self.op_ in OP_LIST:
                 pass
             #
             else:
@@ -112,6 +115,8 @@ class Operation(object):
             return_ = check_str(msg_2_check)
         elif self.op_ == OP_CHECK_NOUN:
             return_ = check_noun(msg_2_check)
+        elif self.op_ == OP_CHECK_EMAIL:
+            return_ = chech_email(msg_2_check)
         #
         return return_
     
