@@ -1,2 +1,2 @@
-Vos nom(s) et prénom(s):
-{"type": "in", "op":"check_noun"}
+Votre adresse mail:
+{"type": "in", "op":"check_email"}
