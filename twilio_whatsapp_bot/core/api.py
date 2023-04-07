@@ -224,3 +224,11 @@ def check_msg_validity(msg: str, operation: Any) -> bool:
     tmp_ = Operation().run_in(operation, msg)
     logging.info("Check validity of the user response (%s)", tmp_)
     return tmp_
+
+
+def check_elements() -> Any:
+
+    return {
+        "folder": "hello folder",
+        "operation": "hello operation"
+    }

@@ -18,6 +18,15 @@ main_bp = Blueprint("main_bp",
 @main_bp.route("/")
 def hello():
     return render_template("index.html")
+
+
+@main_bp.route("/check", methods=["GET"])
+def check():
+    from twilio_whatsapp_bot.core.api import check_elements
+    check_ = check_elements()
+    return render_template("check.html",
+                           folder = check_["folder"],
+                           operation = check_["operation"])
     
 
 @main_bp.route("/bot", methods=["POST"])
