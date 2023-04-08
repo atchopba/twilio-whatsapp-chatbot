@@ -1,5 +1,5 @@
 Quand seriez-vous libre cette semaine pour passer faire une simulation?
-1. ce lundi
-2. ce mardi
-3. ce jeudi
-4. ce vendredi
+1. lundi
+2. mardi
+3. jeudi
+4. vendredi
