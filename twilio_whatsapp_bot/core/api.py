@@ -1,6 +1,5 @@
 #!/usr/bin/python
 from config import Config
-import logging
 from twilio_whatsapp_bot.core.utilies.data import clean_data_from_question_content, get_datas_in_bot_dialog
 from twilio_whatsapp_bot.core.utilies.operation import Operation, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
@@ -8,8 +7,6 @@ from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, check_folder_exists, get_file_content, get_list_files, load_json_file, remove_accents, replace_assistant_in_content
 from typing import Any
 
-
-logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 COURTESY_STR = "courtesy"
 QUESTION_STR = "question"
@@ -45,13 +42,12 @@ def step_question(index: int) -> str:
     quote = ""
     # verify if the index is the last question
     if index == list_files_size - 1:
-        logging.info("the last question of the dialog")
         is_last_dialog = True
         is_change_folder = False
         quote = get_file_content(list_files[list_files_size - 1]).replace("{}", user_responses[list_files_size - 2].upper())
         # store data in DB
         Answers().insert_data(user_responses)
-        logging.info("Saving OK for the data")
+
     elif index == list_files_size:
         is_last_dialog = True 
         is_change_folder = False
@@ -93,7 +89,6 @@ def step_response(incoming_msg: str) -> str:
         media_list = get_datas_in_bot_dialog(quote)
         quote = clean_data_from_question_content(quote)
         #
-        logging.info("Dialog is a courtesy")
     # else
     elif QUESTION_STR in current_file and not is_global_question:
         quote = step_in_question(response_msg) 
@@ -102,10 +97,8 @@ def step_response(incoming_msg: str) -> str:
         quote = clean_data_from_question_content(quote)
         #
         previous_step_str = QUESTION_STR
-        logging.info("Dialog is a question")
     # if it is global question case
     elif is_global_question:
-        logging.info("Dialog is global folder")
         #
         if incoming_msg.isnumeric() and 1 <= int(incoming_msg) <= nb_folder_question:
             list_files = get_list_files(PATHDIR_TO_QUESTIONS + "/" + str(incoming_msg))       
@@ -137,8 +130,6 @@ def step_in_courtesy(response_msg: str) -> str:
         if ("{}" in next_courtesy_content):
             next_courtesy_content = next_courtesy_content.replace("{}", response_msg)
         current_step += 1
-    
-    logging.info("step in courtesy {%s}", response_msg)
     
     # check if the previous step is courtesy
     if (COURTESY_STR not in next_file and not is_change_folder) or is_words_question:
@@ -181,7 +172,6 @@ def step_in_question(response_msg: str) -> str:
     tmp_ = get_operations_in_bot_dialog(current_file_content)
     operations = tmp_['operations_found']
     current_file_content = tmp_['msg']
-    logging.info("step in question {%s}", response_msg)
 
     # get nb of line of the current file
     nb_lines = len(current_file_content.split("\n"))
@@ -222,7 +212,6 @@ def step_in_question(response_msg: str) -> str:
 
 def check_msg_validity(msg: str, operation: Any) -> bool:
     tmp_ = Operation().run_in(operation, msg)
-    logging.info("Check validity of the user response (%s)", tmp_)
     return tmp_
 
 
