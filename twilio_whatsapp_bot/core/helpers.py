@@ -65,6 +65,10 @@ def count_word(sentence: str, word: str) -> int:
     return a.count(word)
 
 
+def is_question_without_choice(content: str) -> bool:
+    return True if re.findall(r"[a-zA-Z0-9]\.\s*", content, re.MULTILINE|re.DOTALL) else False 
+
+
 def count_nb_folders(path_: str = "./data/dialog/questions/") -> int:
     return len(next(os.walk(path_))[1])
 

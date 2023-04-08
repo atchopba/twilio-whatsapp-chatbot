@@ -93,12 +93,16 @@ class Operation(object):
         return return_
 
 
+    def is_empty(self, json_: Any) -> bool:
+        return not "op" in json_
+
+
     def is_run_in(self, json_: Any) -> bool:
-        return "op" in json_ and json_["type"] == OP_TYPE_IN
+        return not self.is_empty(json_) and json_["type"] == OP_TYPE_IN
 
 
     def is_run_out(self, json_: Any) -> bool:
-        return "op" in json_ and json_["type"] == OP_TYPE_OUT
+        return not self.is_empty(json_) and json_["type"] == OP_TYPE_OUT
     
     
     def run_in(self, json_: Any, msg_2_check) -> bool:
