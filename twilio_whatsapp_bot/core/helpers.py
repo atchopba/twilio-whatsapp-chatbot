@@ -73,6 +73,10 @@ def count_nb_folders(path_: str = "./data/dialog/questions/") -> int:
     return len(next(os.walk(path_))[1])
 
 
+def change_filepath(filepath: str) -> str:
+    return filepath.replace("\\", "/").replace("/", "_").replace(".", "_")
+
+
 def check_number(msg_2_check: str) -> bool:
     return msg_2_check is not None and msg_2_check.isnumeric()
 

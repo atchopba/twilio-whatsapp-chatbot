@@ -13,9 +13,11 @@ class Answers(DB):
     def insert_data(self, datas: Any) -> int:
         insert_params = []
         insert_values = []
-        for i in range(0, len(datas)):
+        i = 0
+        for key_ in datas:
             insert_params.append("question_" + str(i))
-            insert_values.append("'" + datas[i] + "'")
+            insert_values.append("'" + datas[key_] + "'")
+            i += 1
 
         sql = "INSERT INTO answers ("+ ",".join(insert_params) +") VALUES ("+ ",".join(insert_values) +")"
 

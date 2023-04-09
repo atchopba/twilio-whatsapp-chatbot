@@ -4,7 +4,7 @@ from twilio_whatsapp_bot.core.utilies.data import clean_data_from_question_conte
 from twilio_whatsapp_bot.core.utilies.operation import Operation, get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
-from twilio_whatsapp_bot.core.helpers import check_content_is_2_msg, check_folder_exists, count_nb_folders, get_file_content, get_list_files, is_question_without_choice, load_json_file, remove_accents, replace_assistant_in_content
+from twilio_whatsapp_bot.core.helpers import change_filepath, check_content_is_2_msg, check_folder_exists, count_nb_folders, get_file_content, get_list_files, is_question_without_choice, load_json_file, remove_accents, replace_assistant_in_content
 from typing import Any
 
 
@@ -40,7 +40,7 @@ run_out_question_part = ""
 is_unique_question_folder = True if count_nb_folders(PATHDIR_TO_QUESTIONS) == 1 else False
 
 
-def step_question(index: int) -> str:
+def step_question(index: int, response_msg: str = "") -> str:
     global current_step, current_file, is_change_folder, is_global_question, is_last_dialog, is_run_out, list_files, nb_rows_run_out, run_out_question_part, user_responses
     list_files_size = len(list_files)
     quote = ""
@@ -48,7 +48,7 @@ def step_question(index: int) -> str:
     if index == list_files_size - 1:
         is_last_dialog = True
         is_change_folder = False
-        quote = get_file_content(list_files[list_files_size - 1]).replace("{}", user_responses[list_files_size - 2].upper())
+        quote = get_file_content(list_files[list_files_size - 1]).replace("{}", response_msg.upper())
         # store data in DB
         Answers().insert_data(user_responses)
 
@@ -87,7 +87,8 @@ def step_response(incoming_msg: str) -> str:
     current_file = list_files[current_step]
     quote = ""
     media_list = []
-    
+    user_responses[change_filepath(current_file)] = response_msg
+
     # if question is a courtesy
     if (((current_step == 0 or COURTESY_STR in current_file) and not is_change_folder) or is_words_question) and not is_unique_question_folder:
         quote = step_in_courtesy(response_msg)
@@ -125,8 +126,7 @@ def step_response(incoming_msg: str) -> str:
 
 
 def step_in_courtesy(response_msg: str) -> str:
-    global current_step, user_responses, list_files, is_change_folder, is_global_question, is_unique_question_folder, is_words_question, nb_folder_question, propose_all_questions_folder
-    user_responses[current_step] = response_msg
+    global current_step, list_files, is_change_folder, is_global_question, is_unique_question_folder, is_words_question, nb_folder_question, propose_all_questions_folder
     next_file = ""
     
     if not is_words_question or is_unique_question_folder:
@@ -170,7 +170,7 @@ def step_in_courtesy(response_msg: str) -> str:
 
 
 def step_in_question(response_msg: str) -> str:
-    global current_step, is_words_question, is_run_out, nb_rows_run_out, run_out_question_part, user_responses
+    global current_step, is_words_question, is_run_out, nb_rows_run_out, run_out_question_part
     quote = ""
     current_file = list_files[current_step]
     current_file_content = get_file_content(current_file)
@@ -191,18 +191,15 @@ def step_in_question(response_msg: str) -> str:
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content + run_out_question_part
         else:
-            user_responses[current_step] = response_msg
-            quote = step_question(current_step + 1)
+            quote = step_question(current_step + 1, response_msg)
     # nb line > 1, many possibilities of responses
     else:
         # if made by request
         if is_run_out and 1 <= int(response_msg) <= nb_rows_run_out:
             is_run_out = False
-            user_responses[current_step] = response_msg
-            quote = step_question(current_step + 1)
+            quote = step_question(current_step + 1, response_msg)
         elif response_msg.isnumeric() and 1 <= int(response_msg) <= nb_lines-1:
-            user_responses[current_step] = response_msg
-            quote = step_question(current_step + 1)
+            quote = step_question(current_step + 1, response_msg)
         elif operations != "" and operations is not None and Operation().is_run_in(operations) and not check_msg_validity(response_msg, operations):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
