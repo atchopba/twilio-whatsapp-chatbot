@@ -11,11 +11,20 @@ class Answers(DB):
 
 
     def insert_data(self, datas: Any) -> int:
-        sql = "INSERT INTO answers (question_1, question_2, question_3, question_4, question_5) VALUES (%s, %s, %s, %s, %s)"
+        insert_params = []
+        insert_values = []
+        i = 0
+        for key_ in datas:
+            insert_params.append("question_" + str(i))
+            insert_values.append("'" + datas[key_] + "'")
+            i += 1
+
+        sql = "INSERT INTO answers ("+ ",".join(insert_params) +") VALUES ("+ ",".join(insert_values) +")"
+
         try:
             self.connect()
             with self.connection.cursor() as cursor:
-                cursor.execute(sql, (datas[1], datas[2], datas[3], datas[4], datas[5]))
+                cursor.execute(sql)
                 self.connection.commit()
         except Exception as exception:
             print("Erreur lors de l'execution : ", exception)

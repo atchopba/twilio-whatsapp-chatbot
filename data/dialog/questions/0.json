@@ -1,0 +1,38 @@
+[
+	{
+		"folder": "1",
+		"question": null,
+		"title": "service emprunt/pret",
+		"words": "emprunt|pret|argent"
+	},
+	{
+		"folder": "2",
+		"question": null,
+		"title": "service assurance habitat/vehicule",
+		"words": "assur|assurance|maison|piole|voiture|vehicule|bagnole"
+	},
+	{
+		"folder": "3",
+		"question": null,
+		"title": "service migration de compte",
+		"words": "mobilit|banque|region|region|province|ville"
+	},
+	{
+		"folder": null,
+		"question": "Je vais bien. \n\nEn quoi puis-je aider?",
+		"title": null,
+		"words": "et vous | et toi | toi-m | toi m | vous-m | vous m"
+	},
+	{
+		"folder": null,
+		"question": "Nous avons fait les presentations precedemment. \n\nQuel est l'objet de votre demande, s'il vous plait?",
+		"title": null,
+		"words": "comment ca va | comment allez | comment va | tu vas bien"
+	},
+	{
+		"folder": null,
+		"question": "Je ne saisis pas le sens de votre phrase. \n\nVeuillez etre un peu plus precis, s'il vous plait",
+		"title": null,
+		"words": "hao | go | baise | baiz | fom | au champ | mere | maman | mouf | noyau | cul"
+	}
+]

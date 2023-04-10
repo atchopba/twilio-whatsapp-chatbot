@@ -1,0 +1,3 @@
+Merci pour vos réponses, M./Mme {}. Nous rentrerons en contact avec vous sous un délai de 48h maximum.
+{"data": "file", "type": "image/png", "url": "https://raw.githubusercontent.com/dianephan/flask_upload_photos/main/UPLOADS/DRAW_THE_OWL_MEME.png"}
+{"data": "file", "type": "image/png", "url": "https://cdn.futura-sciences.com/cdn-cgi/image/width=1520,quality=50,format=auto/sources/images/dossier/773/01-intro-773.jpg"} 

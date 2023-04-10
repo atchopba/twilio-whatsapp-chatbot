@@ -1,0 +1,2 @@
+Quel crénau préférez-vous?
+{"type": "out", "op": "SELECT CONCAT(begin_time, ' - ', end_time) AS slot FROM time_slots", "column": "slot"}

@@ -1,11 +1,12 @@
 # Twilio-whatsapp-bot
-Twilio whatsapp chatbot
+Twilio whatsapp chatbot.
+The dialog is configured in text files. The files are thus read in alphabetical order during the discussion.
 
 ## Install
 
-### Python 3.6
+### Python 3.10
 
-- https://www.python.org/ftp/python/3.6.0/python-3.6.0-amd64.exe
+- https://www.python.org/downloads/release/python-3109/
 - put the folder python36 and python/Scripts in the ennvironment variables
 
 

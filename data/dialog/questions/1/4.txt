@@ -1,0 +1,2 @@
+Votre numéro de téléphone: 
+{"type": "in", "op":"check_phonenumber"}

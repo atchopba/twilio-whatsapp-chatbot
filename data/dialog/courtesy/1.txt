@@ -1,0 +1,3 @@
+Bonjour *{}*, je suis *{ASSISTANT}*, votre correspondant de la conversation.
+|
+Comment allez-vous?
