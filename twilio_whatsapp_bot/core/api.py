@@ -34,6 +34,7 @@ nb_folder_question = 0
 nb_rows_run_out = -1
 is_run_out = False
 run_out_question_part = ""
+current_step = 0
 
 # If you have only 1 question directory for dialogue, please keep only 1 file 
 # in the courtesy directory for the proper functioning of the chatbot
@@ -70,7 +71,8 @@ def step_question(index: int, response_msg: str = "") -> str:
         #
         tmp_ = get_operations_in_bot_dialog(get_file_content(current_file))
         quote = tmp_["msg"]
-        if "operations_found" in tmp_ and tmp_["operations_found"] is not None and tmp_["operations_found"] != "":
+        #
+        if "operations_found" in tmp_ and tmp_["operations_found"] is not None and Operation().is_run_out(tmp_["operations_found"]):
             run_out_list = Operation().run_out(tmp_["operations_found"])
             nb_rows_run_out= len(run_out_list)
             #
@@ -81,7 +83,7 @@ def step_question(index: int, response_msg: str = "") -> str:
     return quote
 
 
-def step_response(incoming_msg: str) -> str:
+def step_response(incoming_msg: str) -> Any:
     global current_step, user_responses, previous_step_str, is_unique_question_folder, is_last_dialog, is_words_question, list_files, is_global_question
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
@@ -184,10 +186,10 @@ def step_in_question(response_msg: str) -> str:
 
     # if file is on 1 line, get the answer and next question
     if nb_lines == 1 or is_question_without_choice(current_file_content):
-        if Operation().is_run_in(operations) and not check_msg_validity(response_msg, operations):
+        if operations != "" and operations is not None and Operation().is_run_in(operations) and not check_msg_validity(response_msg, operations):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
-        elif Operation().is_run_out(operations) and not (1 <= int(response_msg) <= nb_rows_run_out):
+        elif operations != "" and operations is not None and Operation().is_run_out(operations) and not (1 <= int(response_msg) <= nb_rows_run_out):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content + run_out_question_part
         else:

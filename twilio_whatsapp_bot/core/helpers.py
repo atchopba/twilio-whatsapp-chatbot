@@ -66,11 +66,17 @@ def count_word(sentence: str, word: str) -> int:
 
 
 def is_question_without_choice(content: str) -> bool:
-    return True if re.findall(r"[a-zA-Z0-9]\.\s*", content, re.MULTILINE|re.DOTALL) else False 
+    return True if not re.findall(r"[a-zA-Z0-9]\.\s*", content, re.MULTILINE|re.DOTALL) else False 
 
 
-def count_nb_folders(path_: str = "./data/dialog/questions/") -> int:
-    return len(next(os.walk(path_))[1])
+def count_nb_folders(input_path: str = "./data/dialog/questions/") -> int:
+    folder_count = 0  # type: int
+    if not check_folder_exists(input_path):
+        return -1
+    for folders in os.listdir(input_path):  # loop over all files
+        if os.path.isdir(os.path.join(input_path, folders)):  # if it's a directory
+            folder_count += 1 
+    return folder_count
 
 
 def change_filepath(filepath: str) -> str:
@@ -90,10 +96,12 @@ def check_noun(msg_2_check: str) -> bool:
 
 
 def check_phonenumber(msg_2_check: str) -> bool:
+    '''
     import phonenumbers
     from phonenumbers import carrier
     from phonenumbers.phonenumberutil import number_type
     #
+    msg_2_check = msg_2_check.replace("%2b", "+")
     if not msg_2_check.startswith("+"):
         msg_2_check = DEFAULT_CALLING_CODE + msg_2_check
     #
@@ -101,8 +109,14 @@ def check_phonenumber(msg_2_check: str) -> bool:
         return_ = carrier._is_mobile(number_type(phonenumbers.parse(msg_2_check)))
     except:
         return_ = False
-    return return_
+    '''
+    msg_2_check = msg_2_check.replace("%2b", "+")
+    if not msg_2_check.startswith("+"):
+        msg_2_check = DEFAULT_CALLING_CODE + msg_2_check
+    pattern = re.compile(r"^(\+){0,1}\d{8,12}$")
+    return bool(pattern.match(msg_2_check))
 
 
 def chech_email(email_adr: str) -> bool:
+    email_adr = email_adr.replace("%40", "@")
     return True if re.match(r"[^@]+@[^@]+\.[^@]+", email_adr) else False
