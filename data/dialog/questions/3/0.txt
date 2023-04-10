@@ -1,0 +1,2 @@
+Votre adresse mail:
+{"type": "in", "op":"check_email"}
