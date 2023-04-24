@@ -7,7 +7,7 @@ The dialog is configured in text files. The files are thus read in alphabetical 
 ### Python 3.10
 
 - https://www.python.org/downloads/release/python-3109/
-- put the folder python36 and python/Scripts in the ennvironment variables
+- put the folder python310 and python/Scripts in the ennvironment variables
 
 
 ### Ngrok
@@ -50,3 +50,10 @@ ngrok http 4000
 
 - Copy the https:// URL from the ngrok output and then paste it on the "When a message comes in" field.
 - Add /bot after the url to expose the endpoint
+
+### Twilio
+
+- Go to [Twilio](https://console.twilio.com/) -> Messaging -> send WhatsApp message -> sandbox parameter
+- Put your ngrok address here + /bot
+![Page index](data/images/image-01.png)
+- and save the configuration
