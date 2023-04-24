@@ -61,7 +61,7 @@ ngrok http 4000
 
 Now you can start interacting with the number set on Twilio.
 
-### Usage
+## Usage
 
 - The dialog files are listed in data/dialog.
 - The dialogue is divided 2: a **courtesy** folder and a **questions** folder.
