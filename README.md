@@ -1,4 +1,4 @@
-# Twilio-whatsapp-bot
+# Twilio-whatsapp-chatbot
 Twilio whatsapp chatbot.
 The dialog is configured in text files. The files are thus read in alphabetical order during the discussion.
 
