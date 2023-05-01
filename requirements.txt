@@ -1,4 +1,4 @@
-flask==2.0.3
+flask==2.3.2
 parse==1.19.0
 pathlib2==2.3.7
 python-dotenv==0.20.0
