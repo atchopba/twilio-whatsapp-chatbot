@@ -68,7 +68,9 @@ Now you can start interacting with the number set on Twilio.
 - The **0.json** file allows you to set up words or phrases that will redirect the user to a folder in case of a free question. If in the user's answer, the words do not match the setting, all the folders will be listed.
 - The **0.json** file also contains words that the chatbot would not admit such as misplaced words, degrading words, etc.
 - You must have at least ONE file in courtesy for the chatbot to function properly.
-- For the chatbot to send multiple messages to the successively, you must use the separator  **|**
+- For the chatbot to send multiple messages to the successively, you must use the  **|** like separator
 - No input check is made for the dialogue that is in the courtesy folder.
+- A dialog file containing a choice in the answer, the answer must be numbered from 1 in ascending order.
 - Some verification operations are done for the dialogue is in the file question: *check_noun*, *check_str*, *check_number*, *check_phonenumber*, *check_city*, *check_email*.
+- There is an operation that selects items in databases and cross-references as choices. You must well configure the database before.
 - Operations listed above don't work yet on dialogs listed in courtesy.
