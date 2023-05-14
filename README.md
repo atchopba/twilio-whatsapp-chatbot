@@ -63,10 +63,10 @@ Now you can start interacting with the number set on Twilio.
 
 ## Usage
 
-- The dialog files are listed in data/dialog.
-- The dialogue is divided 2: a **courtesy** folder and a **questions** folder.
-- The **0.json** file allows you to set up words or phrases that will redirect the user to a folder in case of a free question. If in the user's answer, the words do not match the setting, all the folders will be listed.
-- The **0.json** file also contains words that the chatbot would not admit such as misplaced words, degrading words, etc.
+- The dialog files are listed in [data/dialog](./data/dialog/).
+- The dialogue is divided 2: a [**courtesy**](./data/dialog/courtesy/) and a [**questions**](./data/dialog/questions/).
+- The [**0.json**](./data/dialog/questions/0.json) file allows you to set up words or phrases that will redirect the user to a folder in case of a free question. If in the user's answer, the words do not match the setting, all the folders will be listed.
+- The [**0.json**](./data/dialog/questions/0.json) file also contains words that the chatbot would not admit such as misplaced words, degrading words, etc.
 - You must have at least ONE file in courtesy for the chatbot to function properly.
 - For the chatbot to send multiple messages to the successively, you must use the  **|** like separator
 - No input check is made for the dialogue that is in the courtesy folder.
