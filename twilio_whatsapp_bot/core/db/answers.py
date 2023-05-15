@@ -5,10 +5,9 @@ from typing import Any
 
 
 class Answers(DB):
-    
+
     def __init__(self):
         pass
-
 
     def insert_data(self, datas: Any) -> int:
         insert_params = []
@@ -19,7 +18,8 @@ class Answers(DB):
             insert_values.append("'" + datas[key_] + "'")
             i += 1
 
-        sql = "INSERT INTO answers ("+ ",".join(insert_params) +") VALUES ("+ ",".join(insert_values) +")"
+        sql = "INSERT INTO answers (" + ",".join(insert_params) + ") "
+        sql += "VALUES (" + ",".join(insert_values) + ")"
 
         try:
             self.connect()

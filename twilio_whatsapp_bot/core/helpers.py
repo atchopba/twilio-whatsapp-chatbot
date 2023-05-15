@@ -12,8 +12,15 @@ from unidecode import unidecode
 
 DEFAULT_CALLING_CODE = Config.DEFAULT_CALLING_CODE
 
+
 def get_data_from_url(received_message: str, index: str) -> str:
-    template = 'SmsMessageSid={SmsMessageSid}&NumMedia={NumMedia}&ProfileName={ProfileName}&SmsSid={SmsSid}&WaId={WaId}&SmsStatus={SmsStatus}&Body={Body}&To={To}&NumSegments={NumSegments}&ReferralNumMedia={ReferralNumMedia}&MessageSid={MessageSid}&AccountSid={AccountSid}&From={From}&ApiVersion={ApiVersion}'
+    template = ('SmsMessageSid={SmsMessageSid}&NumMedia={NumMedia}' +
+                '&ProfileName={ProfileName}&SmsSid={SmsSid}' +
+                '&WaId={WaId}&SmsStatus={SmsStatus}&Body={Body}' +
+                '&To={To}&NumSegments={NumSegments}' +
+                '&ReferralNumMedia={ReferralNumMedia}' +
+                '&MessageSid={MessageSid}&AccountSid={AccountSid}' +
+                '&From={From}&ApiVersion={ApiVersion}')
     tokens = parse(template, received_message)
     return tokens[index]
 
@@ -66,7 +73,9 @@ def count_word(sentence: str, word: str) -> int:
 
 
 def is_question_without_choice(content: str) -> bool:
-    return True if not re.findall(r"[a-zA-Z0-9]\.\s*", content, re.MULTILINE|re.DOTALL) else False 
+    return True if (
+        not re.findall(r"[a-zA-Z0-9]\.\s*", content, re.MULTILINE | re.DOTALL)
+    ) else False
 
 
 def count_nb_folders(input_path: str = "./data/dialog/questions/") -> int:
@@ -74,8 +83,9 @@ def count_nb_folders(input_path: str = "./data/dialog/questions/") -> int:
     if not check_folder_exists(input_path):
         return -1
     for folders in os.listdir(input_path):  # loop over all files
-        if os.path.isdir(os.path.join(input_path, folders)):  # if it's a directory
-            folder_count += 1 
+        # if it's a directory
+        if os.path.isdir(os.path.join(input_path, folders)):
+            folder_count += 1
     return folder_count
 
 
@@ -88,7 +98,8 @@ def check_number(msg_2_check: str) -> bool:
 
 
 def check_str(msg_2_check: str) -> bool:
-    return isinstance(msg_2_check, str) and any(ele in msg_2_check for ele in ["a", "e", "i", "o", "u", "y"])
+    return (isinstance(msg_2_check, str) and
+            any(ele in msg_2_check for ele in ["a", "e", "i", "o", "u", "y"]))
 
 
 def check_noun(msg_2_check: str) -> bool:
@@ -96,20 +107,6 @@ def check_noun(msg_2_check: str) -> bool:
 
 
 def check_phonenumber(msg_2_check: str) -> bool:
-    '''
-    import phonenumbers
-    from phonenumbers import carrier
-    from phonenumbers.phonenumberutil import number_type
-    #
-    msg_2_check = msg_2_check.replace("%2b", "+")
-    if not msg_2_check.startswith("+"):
-        msg_2_check = DEFAULT_CALLING_CODE + msg_2_check
-    #
-    try:
-        return_ = carrier._is_mobile(number_type(phonenumbers.parse(msg_2_check)))
-    except:
-        return_ = False
-    '''
     msg_2_check = msg_2_check.replace("%2b", "+")
     if not msg_2_check.startswith("+"):
         msg_2_check = DEFAULT_CALLING_CODE + msg_2_check
@@ -117,6 +114,6 @@ def check_phonenumber(msg_2_check: str) -> bool:
     return bool(pattern.match(msg_2_check))
 
 
-def chech_email(email_adr: str) -> bool:
+def check_email(email_adr: str) -> bool:
     email_adr = email_adr.replace("%40", "@")
     return True if re.match(r"[^@]+@[^@]+\.[^@]+", email_adr) else False

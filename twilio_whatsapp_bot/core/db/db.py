@@ -8,12 +8,12 @@ from config import Config
 
 ResultSelectQuery = namedtuple("ResultSelectQuery", "result error_msg")
 
+
 class DB(object):
-    
+
     def __init__(self):
-        pass    
-    
-    
+        pass
+
     def connect(self) -> None:
         '''
         Connect to the database with params define into .env file
@@ -24,15 +24,14 @@ class DB(object):
 
         '''
         self.connection = pymysql.connect(
-            host = Config.MYSQL_HOST,
-            user = Config.MYSQL_USER,
-            password = Config.MYSQL_PWD,
-            db = Config.MYSQL_DB,
-            charset = Config.MYSQL_CHARSET,
-            cursorclass = pymysql.cursors.DictCursor
+            host=Config.MYSQL_HOST,
+            user=Config.MYSQL_USER,
+            password=Config.MYSQL_PWD,
+            db=Config.MYSQL_DB,
+            charset=Config.MYSQL_CHARSET,
+            cursorclass=pymysql.cursors.DictCursor
         )
-    
-    
+
     def deconnect(self) -> None:
         '''
         Deconnect to the database
@@ -43,9 +42,8 @@ class DB(object):
 
         '''
         self.connection.close()
-     
-        
-    def select(self, r, select_one = False) -> Any:
+
+    def select(self, r, select_one: bool = False) -> Any:
         '''
         Select data into a table
 
@@ -68,17 +66,17 @@ class DB(object):
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(r)
-                result = cursor.fetchall() if select_one is False else [cursor.fetchone()]
+                result = cursor.fetchall() if (
+                    select_one is False) else [cursor.fetchone()]
         except Exception as e:
-            error_msg = "Erreur lors de l'execution : "
+            error_msg = "Erreur lors de l'execution : ", e
+            print(error_msg)
         self.deconnect()
         return result
-    
-    
+
     def is_result(self, r):
         return len(r) > 0 and r[0] is not None
 
-    
     def insert(self, sql: str, datas: Any) -> int:
         '''
         Insert a row data into a table
@@ -107,4 +105,3 @@ class DB(object):
             print("Erreur lors de l'execution : ", exception)
         self.deconnect()
         return return_
-    

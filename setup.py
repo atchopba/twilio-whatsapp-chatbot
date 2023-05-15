@@ -14,10 +14,10 @@ with open(path.join(path_, "README.md"), encoding="utf-8") as f:
 setup(
     name="twilio-whatsapp-bot",
     version="0.0.1",
-    description="Twilio whatsapp chatbot!",
+    description="Twilio whatsapp chatbot. The dialog is configured in text files. The files are thus read in alphabetical order during the discussion.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/atchopba/twilio-whatsapp-bot",
+    url="https://github.com/atchopba/twilio-whatsapp-chatbot",
     author="atchopba",
     author_email="atchopba@gmail.com",
     classifiers=[
@@ -29,6 +29,4 @@ setup(
     keywords="python twilio whatsapp chatbot",
     install_requires=["pytest>=5.4.3"],
     license="GPL-3.0 License",
-    
 )
-
