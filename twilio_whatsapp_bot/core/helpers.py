@@ -45,7 +45,7 @@ def remove_accents(msg: str) -> str:
 
 
 def replace_assistant_in_content(file_content: str, assistant: str) -> str:
-    return file_content.replace("{ASSISTANT}", assistant)
+    return file_content.replace("{ASSISTANT}", assistant).replace("{assistant}", assistant) # noqa
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
