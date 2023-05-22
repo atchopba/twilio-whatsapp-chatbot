@@ -9,9 +9,11 @@ from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
     get_file_content, get_list_files, is_question_without_choice, \
-    load_json_file, remove_accents, replace_assistant_in_content
+    load_json_file, remove_accents, replace_assistant_in_content, translate_msg
 from typing import Any
 
+LANG_FR = "fr"
+LANG_EN = "en"
 
 COURTESY_STR = "courtesy"
 QUESTION_STR = "question"
@@ -39,11 +41,14 @@ propose_all_questions_folder = ""
 is_change_folder = False
 is_global_question = False
 is_words_question = False
+is_save_question = False
+save_operation = None
 nb_folder_question = 0
 nb_rows_run_out = -1
 is_run_out = False
 run_out_question_part = ""
 current_step = 0
+language = LANG_FR
 
 # If you have only 1 question directory for dialogue, please keep only 1 file
 # in the courtesy directory for the proper functioning of the chatbot
@@ -85,7 +90,7 @@ def step_question(index: int, response_msg: str = "") -> str:
         tmp_ = get_operations_in_bot_dialog(get_file_content(current_file))
         quote = tmp_["msg"]
         #
-        if ("operations_found" in tmp_ 
+        if ("operations_found" in tmp_
                 and tmp_["operations_found"] is not None
                 and Operation().is_run_out(tmp_["operations_found"])):
             run_out_list = Operation().run_out(tmp_["operations_found"])
@@ -101,12 +106,16 @@ def step_question(index: int, response_msg: str = "") -> str:
 def step_response(incoming_msg: str) -> Any:
     global current_step, user_responses, previous_step_str, \
         is_unique_question_folder, is_last_dialog, \
-        is_words_question, list_files, is_global_question
+        is_words_question, list_files, is_global_question, is_save_question, \
+        save_operation, language
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
     media_list = []
     user_responses[change_filepath(current_file)] = response_msg
+
+    if is_save_question:
+        save_params(save_operation, response_msg)
 
     # if question is a courtesy
     if (
@@ -149,8 +158,9 @@ def step_response(incoming_msg: str) -> Any:
     #
     check_content_msg = check_content_is_2_msg(quote)
     #
+    tokens_msg = translate_msg(check_content_msg["tokens"], LANG_FR, language)
     return {
-        "tokens": check_content_msg["tokens"],
+        "tokens": tokens_msg,
         "is_in_2_msg": check_content_msg["is_in_2_msg"],
         "is_last_dialog": is_last_dialog,
         "media": media_list["datas_found"] if (
@@ -165,11 +175,14 @@ def step_response(incoming_msg: str) -> Any:
 def step_in_courtesy(response_msg: str) -> str:
     global current_step, list_files, is_change_folder, is_global_question, \
         is_unique_question_folder, is_words_question, nb_folder_question, \
-        propose_all_questions_folder
+        propose_all_questions_folder, is_save_question, save_operation
     next_file = ""
 
     if not is_words_question or is_unique_question_folder:
-        next_courtesy_content = get_file_content(list_files[current_step + 1])
+        tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1]))
+        save_operation = tmp_['operations_found']
+        is_save_question = Operation().is_run_save(save_operation)
+        next_courtesy_content = tmp_['msg']
         next_file = list_files[current_step + 1]
         # check if the content contains {} to replace with the response
         if ("{}" in next_courtesy_content):
@@ -198,7 +211,10 @@ def step_in_courtesy(response_msg: str) -> str:
             current_step = 0
             is_words_question = False
             #
-            next_courtesy_content = get_file_content(list_files[current_step])
+            tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step]))
+            save_operation = tmp_['operations_found']
+            is_save_question = Operation().is_run_save(save_operation)
+            next_courtesy_content = tmp_['msg']
         #
         elif folder_index == -1 and question_ is not None and question_ != "":
             next_courtesy_content = question_
@@ -271,3 +287,10 @@ def step_in_question(response_msg: str) -> str:
 def check_msg_validity(msg: str, operation: Any) -> bool:
     tmp_ = Operation().run_in(operation, msg)
     return tmp_
+
+
+def save_params(operation: Any, response_msg: str) -> bool:
+    global language
+    tmp_ = Operation().run_save(operation)
+    if tmp_ is not None and "param" in tmp_ and tmp_["param"] == "lang":
+        language = LANG_EN if response_msg == "2" else LANG_FR

@@ -9,6 +9,13 @@ from typing import Any
 
 OP_TYPE_OUT = "out"
 OP_TYPE_IN = "in"
+OP_TYPE_SAVE = "save"
+
+OP_TYPE_LIST = {
+    OP_TYPE_OUT: "out",
+    OP_TYPE_IN: "in",
+    OP_TYPE_SAVE: "save"
+}
 
 OP_CHECK_NOUN = "check_noun"
 OP_CHECK_STR = "check_str"
@@ -28,13 +35,13 @@ OP_LIST = {
 }
 
 
-PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"  # noqa
+PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z0-9*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"  # noqa
 
 
 def clean_operations_from_question_content(msg: str) -> str:
     tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
-    if tmp_ != msg:
-        tmp_ = tmp_.replace("\n", "")
+    # if tmp_ != msg:
+    #    tmp_ = tmp_.replace("\n", "")
     return tmp_
 
 
@@ -72,7 +79,7 @@ class Operation(object):
         msg_2 = '''is an unknow operation type. Please notify the system
         administrator'''
         if (self.type_ is not None
-                and self.type_ in (OP_TYPE_IN, OP_TYPE_OUT)
+                and self.type_ in OP_TYPE_LIST
                 and self.op_ is not None):
             #
             if (self.type_ == OP_TYPE_OUT
@@ -81,6 +88,9 @@ class Operation(object):
                 pass
             #
             elif self.type_ == OP_TYPE_IN and self.op_ in OP_LIST:
+                pass
+            #
+            elif self.type_ == OP_TYPE_SAVE:
                 pass
             #
             else:
@@ -102,6 +112,8 @@ class Operation(object):
             return_ = self.run_in(json_, msg_2_check)
         elif self.type_ == OP_TYPE_OUT:
             return_ = self.run_out(json_)
+        elif self.type_ == OP_TYPE_SAVE:
+            return_ = self.run_save(json_)
         #
         return return_
 
@@ -109,10 +121,15 @@ class Operation(object):
         return "op" not in json_
 
     def is_run_in(self, json_: Any) -> bool:
-        return not self.is_empty(json_) and json_["type"] == OP_TYPE_IN
+        return (not self.is_empty(json_) and "type" in json_ and
+                json_["type"] == OP_TYPE_IN)
 
     def is_run_out(self, json_: Any) -> bool:
-        return not self.is_empty(json_) and json_["type"] == OP_TYPE_OUT
+        return (not self.is_empty(json_) and "type" in json_ and
+                json_["type"] == OP_TYPE_OUT)
+
+    def is_run_save(self, json_: Any) -> bool:
+        return "type" in json_ and json_["type"] == OP_TYPE_SAVE
 
     def run_in(self, json_: Any, msg_2_check) -> bool:
         self.parse(json_)
@@ -142,3 +159,9 @@ class Operation(object):
             return_.append(str(i) + ". " + r[json_["column"]])
             i += 1
         return return_
+
+    def run_save(self, json_: Any) -> Any:
+        self.parse(json_)
+        return {
+            "param": json_["param"]
+        }

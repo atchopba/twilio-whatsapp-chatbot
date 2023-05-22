@@ -44,8 +44,9 @@ def bot():
         msg_list = []
         #
         for i in range(1, len(msg_tokens)):
-            msg_list.append(resp.message())
-            msg_list[i-1].body(f"{msg_tokens[i]}")
+            if msg_tokens[i] != "":
+                msg_list.append(resp.message())
+                msg_list[i-1].body(f"{msg_tokens[i]}")
 
         # add media
         if (step_response_["media"] is not None

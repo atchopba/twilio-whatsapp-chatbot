@@ -6,6 +6,7 @@ import os
 from parse import parse
 from pathlib import Path
 import re
+from deep_translator import GoogleTranslator
 from typing import Any
 from unidecode import unidecode
 
@@ -117,3 +118,14 @@ def check_phonenumber(msg_2_check: str) -> bool:
 def check_email(email_adr: str) -> bool:
     email_adr = email_adr.replace("%40", "@")
     return True if re.match(r"[^@]+@[^@]+\.[^@]+", email_adr) else False
+
+
+def translate_msg(tokens: Any, from_lang: str, to_lang: str) -> Any:
+    if from_lang != to_lang:
+        tmp_tokens = []
+        for token in tokens:
+            if token != "" and token.strip() != "":
+                translator = GoogleTranslator(source='auto', target=to_lang)
+                tmp_tokens.append(translator.translate(token))
+        return tmp_tokens
+    return tokens
