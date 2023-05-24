@@ -1,12 +1,12 @@
 #!/usr/bin/python
 from config import Config
+from deep_translator import GoogleTranslator
 import glob
 import json
 import os
 from parse import parse
 from pathlib import Path
 import re
-from deep_translator import GoogleTranslator
 from typing import Any
 from unidecode import unidecode
 

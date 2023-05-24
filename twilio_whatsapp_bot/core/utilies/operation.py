@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import json
 import re
+import requests
 from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
     check_phonenumber, check_str, check_email
@@ -10,11 +11,13 @@ from typing import Any
 OP_TYPE_OUT = "out"
 OP_TYPE_IN = "in"
 OP_TYPE_SAVE = "save"
+OP_TYPE_MAP = "map"
 
 OP_TYPE_LIST = {
-    OP_TYPE_OUT: "out",
-    OP_TYPE_IN: "in",
-    OP_TYPE_SAVE: "save"
+    OP_TYPE_OUT: OP_TYPE_OUT,
+    OP_TYPE_IN: OP_TYPE_IN,
+    OP_TYPE_SAVE: OP_TYPE_SAVE,
+    OP_TYPE_MAP: OP_TYPE_MAP
 }
 
 OP_CHECK_NOUN = "check_noun"
@@ -58,6 +61,52 @@ def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
     }
 
 
+def geolocate_user(api_key: str, search_place: str, country: str) -> Any:
+    search_place = search_place.replace("  ", " ")
+    search_place += ", " + country
+    search_place = search_place.replace(" ", "%20")
+    url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input="+ search_place +"&inputtype=textquery&fields=formatted_address%2Cname%2Crating%2Copening_hours%2Cgeometry&key=" + api_key # noqa
+    #
+    payload = {}
+    headers = {}
+    response = requests.request("GET", url, headers=headers, data=payload)
+    json_response = json.loads(response.text)
+    location = None
+    #
+    if "candidates" in json_response and len(json_response["candidates"]) > 0:
+        candidates = json_response["candidates"][0]
+        if "geometry" in candidates:
+            location = json_response["candidates"][0]["geometry"]["location"]
+    #
+    return location
+
+
+def geolocate_place_from_user(api_key: str, business_name: str, lat: float, lng: float, limit: int = 5000) -> Any: # noqa
+    locations = []
+    radius = 1500
+    radius_step = 1500
+    while True:
+        url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+ str(lat) +"%2C"+ str(lng) +"&radius="+ str(radius) +"&keyword="+ business_name +"&key="+ api_key # noqa
+        payload = {}
+        headers = {}
+        response = requests.request("GET", url, headers=headers, data=payload)
+        json_response = json.loads(response.text)
+        # if the limit is reached
+        if radius - radius_step >= limit:
+            break
+        # if the response status is not OK #  "status" : "ZERO_RESULTS"
+        if json_response["status"] != "OK":
+            radius += radius_step
+        #
+        else:
+            results = json_response["results"]
+            for result in results:
+                locations.append("- " + result["name"])
+            if len(locations) > 0:
+                break
+    return locations
+
+
 class Operation(object):
 
     def __init__(self):
@@ -91,6 +140,9 @@ class Operation(object):
                 pass
             #
             elif self.type_ == OP_TYPE_SAVE:
+                pass
+            #
+            elif self.type_ == OP_TYPE_MAP:
                 pass
             #
             else:
@@ -131,6 +183,10 @@ class Operation(object):
     def is_run_save(self, json_: Any) -> bool:
         return "type" in json_ and json_["type"] == OP_TYPE_SAVE
 
+    def is_run_map(self, json_: Any) -> bool:
+        return (not self.is_empty(json_) and "type" in json_ and
+                json_["type"] == OP_TYPE_MAP)
+
     def run_in(self, json_: Any, msg_2_check) -> bool:
         self.parse(json_)
         return_ = False
@@ -165,3 +221,18 @@ class Operation(object):
         return {
             "param": json_["param"]
         }
+
+    def run_map(self,
+                api_key: str,
+                response_msg: str,
+                country: str,
+                business_name: str
+                ) -> Any:
+        # self.parse(json_)
+        location = geolocate_user(api_key, response_msg, country)
+        return geolocate_place_from_user(
+            api_key,
+            business_name,
+            location["lat"],
+            location["lng"]
+        ) if "lat" in location and "lng" in location else None

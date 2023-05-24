@@ -31,6 +31,14 @@ PATHDIR_TO_DIALOG = Config.PATH_TO_DIALOG if (
     check_folder_exists(Config.PATH_TO_DIALOG)) else "./data/dialog"
 PATHDIR_TO_QUESTIONS = PATHDIR_TO_DIALOG + "//questions"
 
+GOOGLE_MAPS_API_KEY = Config.GOOGLE_MAPS_API_KEY
+
+DEFAULT_COUNTRY = Config.DEFAULT_COUNTRY
+
+BUSINESS_NAME = Config.BUSINESS_NAME
+
+BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
+
 user_responses = {}
 
 list_files = get_list_files(PATHDIR_TO_DIALOG)
@@ -43,6 +51,8 @@ is_global_question = False
 is_words_question = False
 is_save_question = False
 save_operation = None
+is_map_location = False
+map_user_geolocalisation = None
 nb_folder_question = 0
 nb_rows_run_out = -1
 is_run_out = False
@@ -107,7 +117,7 @@ def step_response(incoming_msg: str) -> Any:
     global current_step, user_responses, previous_step_str, \
         is_unique_question_folder, is_last_dialog, \
         is_words_question, list_files, is_global_question, is_save_question, \
-        save_operation, language
+        save_operation, language, is_map_location
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
@@ -116,6 +126,21 @@ def step_response(incoming_msg: str) -> Any:
 
     if is_save_question:
         save_params(save_operation, response_msg)
+        is_save_question = False
+
+    #
+    is_map_location_tmp = False
+    locations = []
+    quote_tmp = ""
+    if is_map_location:
+        locations = Operation().run_map(
+            GOOGLE_MAPS_API_KEY,
+            incoming_msg,
+            DEFAULT_COUNTRY,
+            BUSINESS_NAME
+        )
+        quote_tmp += BUSINESS_GEOLOCATE_SENTENCE + "\n" + "\n".join(locations)
+        is_map_location_tmp = True
 
     # if question is a courtesy
     if (
@@ -159,6 +184,11 @@ def step_response(incoming_msg: str) -> Any:
     check_content_msg = check_content_is_2_msg(quote)
     #
     tokens_msg = translate_msg(check_content_msg["tokens"], LANG_FR, language)
+    # verify if we are in the case of location
+    if is_map_location_tmp:
+        is_map_location = False
+        tokens_msg = [quote_tmp] + tokens_msg
+
     return {
         "tokens": tokens_msg,
         "is_in_2_msg": check_content_msg["is_in_2_msg"],
@@ -176,12 +206,15 @@ def step_in_courtesy(response_msg: str) -> str:
     global current_step, list_files, is_change_folder, is_global_question, \
         is_unique_question_folder, is_words_question, nb_folder_question, \
         propose_all_questions_folder, is_save_question, save_operation
+
     next_file = ""
 
     if not is_words_question or is_unique_question_folder:
-        tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1]))
+        tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1])) # noqa
+        # check if operation is save
         save_operation = tmp_['operations_found']
         is_save_question = Operation().is_run_save(save_operation)
+        #
         next_courtesy_content = tmp_['msg']
         next_file = list_files[current_step + 1]
         # check if the content contains {} to replace with the response
@@ -211,7 +244,7 @@ def step_in_courtesy(response_msg: str) -> str:
             current_step = 0
             is_words_question = False
             #
-            tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step]))
+            tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step])) # noqa
             save_operation = tmp_['operations_found']
             is_save_question = Operation().is_run_save(save_operation)
             next_courtesy_content = tmp_['msg']
@@ -234,7 +267,7 @@ def step_in_courtesy(response_msg: str) -> str:
 
 def step_in_question(response_msg: str) -> str:
     global current_step, is_words_question, is_run_out, nb_rows_run_out, \
-        run_out_question_part
+        run_out_question_part, is_map_location
     quote = ""
     current_file = list_files[current_step]
     current_file_content = get_file_content(current_file)
@@ -242,6 +275,10 @@ def step_in_question(response_msg: str) -> str:
     tmp_ = get_operations_in_bot_dialog(current_file_content)
     operations = tmp_['operations_found']
     current_file_content = tmp_['msg']
+
+    # check if the operation is map location
+    tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
+    is_map_location = Operation().is_run_map(tmp_2["operations_found"])
 
     # get nb of line of the current file
     nb_lines = len(current_file_content.split("\n"))
@@ -255,7 +292,8 @@ def step_in_question(response_msg: str) -> str:
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
         elif (operations != "" and operations is not None
               and Operation().is_run_out(operations)
-              and not (1 <= int(response_msg) <= nb_rows_run_out)):
+              and (not response_msg.isnumeric() or
+                   not (1 <= int(response_msg) <= nb_rows_run_out))):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
             quote += run_out_question_part
