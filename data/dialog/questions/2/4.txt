@@ -1,0 +1,4 @@
+Bienvenue dans notre service d'assurance habitat et véhicule. Voulez-vous assurer ?
+1. une habitation
+2. un véhicule
+3. les deux
