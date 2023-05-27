@@ -1,4 +1,5 @@
-Bienvenue dans notre service d'assurance habitat et véhicule. Voulez-vous assurer ?
-1. une habitation
-2. un véhicule
-3. les deux
+Quand seriez-vous libre cette semaine pour passer faire une simulation?
+1. lundi
+2. mardi
+3. jeudi
+4. vendredi

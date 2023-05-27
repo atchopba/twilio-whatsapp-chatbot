@@ -1,3 +1,4 @@
-Bien merci.
-|
-En quoi puis-je vous etre utile?
+En quelle langue aimeriez-vous discuter?
+1. Français
+2. Anglais
+{"type": "save", "param": "lang"}
