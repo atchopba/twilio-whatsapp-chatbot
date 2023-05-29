@@ -22,7 +22,11 @@ The dialog is configured in text files. The files are thus read in alphabetical 
 - install dependencies
 
 ```
-pip install -r requirements.txt
+pip3 install virtualenv
+python3 -m venv .venv
+source .venv/bin/activate # for Linux 
+# .venv/Scripts/activate.bat for Windows
+pip3 install -r requirements.txt
 ```
 
 
