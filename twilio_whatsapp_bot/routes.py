@@ -5,7 +5,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from .core.api import step_question, step_response
 
 
-is_begin_dialog = True  # nolint
+is_begin_dialog = True  # pylint: disable=invalid-name
 
 # Blueprint Configuration
 main_bp = Blueprint("main_bp",
