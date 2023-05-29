@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from flask import Flask
 
+
 def create_app():
     #
     app = Flask(__name__, instance_relative_config=False)
@@ -10,7 +11,7 @@ def create_app():
         #
         app.register_blueprint(routes.main_bp)
         #
-        #if app.config["FLASK_ENV"] == "development":
+        # if app.config["FLASK_ENV"] == "development":
         #    pass
         #
         return app
