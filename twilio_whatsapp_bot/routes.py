@@ -4,13 +4,11 @@ from flask import Blueprint, request, render_template
 from twilio.twiml.messaging_response import MessagingResponse
 from .core.api import step_question, step_response
 
-global is_begin_dialog
 
-is_begin_dialog = True
-current_step = 0
+is_begin_dialog = True  # pylint: disable=invalid-name
 
 # Blueprint Configuration
-main_bp = Blueprint("main_bp", 
+main_bp = Blueprint("main_bp",
                     __name__,
                     template_folder="templates",
                     static_folder="static")
@@ -23,7 +21,7 @@ def hello():
 
 @main_bp.route("/bot", methods=["POST"])
 def bot():
-    global is_begin_dialog
+    global is_begin_dialog  # pylint: disable=global-statement
     # print("===> request : ", request.values)
     # add webhook logic here and return a response
     incoming_msg = request.values.get("Body", "").lower().strip()
