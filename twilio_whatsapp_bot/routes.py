@@ -5,7 +5,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from .core.api import step_question, step_response
 
 
-is_begin_dialog = True
+is_begin_dialog = True  # pylint: disable=C0103
 
 # Blueprint Configuration
 main_bp = Blueprint("main_bp",
@@ -21,7 +21,7 @@ def hello():
 
 @main_bp.route("/bot", methods=["POST"])
 def bot():
-    global is_begin_dialog # noqa
+    global is_begin_dialog  # pylint: disable=0W603
     # print("===> request : ", request.values)
     # add webhook logic here and return a response
     incoming_msg = request.values.get("Body", "").lower().strip()
