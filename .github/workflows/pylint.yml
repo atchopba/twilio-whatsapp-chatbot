@@ -20,7 +20,7 @@ jobs:
         pip install virtualenv
         python -m venv .venv
         source .venv/bin/activate
-        pip install -r requirement.txt
+        pip install -r ./../../requirement.txt
         pip install pylint
     - name: Analysing the code with pylint
       run: |
