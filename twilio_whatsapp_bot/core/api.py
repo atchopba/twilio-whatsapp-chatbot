@@ -39,6 +39,8 @@ BUSINESS_NAME = Config.BUSINESS_NAME
 
 BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
 
+IS_SAVE_IN_DB = Config.IS_SAVE_IN_DB
+
 user_responses = {}
 
 list_files = get_list_files(PATHDIR_TO_DIALOG)
@@ -79,13 +81,15 @@ def step_question(index: int, response_msg: str = "") -> str:
         quote = get_file_content(list_files[list_files_size - 1])
         quote = quote.replace("{}", response_msg.upper())
         # store data in DB
-        Answers().insert_data(user_responses)
+        if IS_SAVE_IN_DB:
+            Answers().insert_data(user_responses)
 
     elif index == list_files_size:
         is_last_dialog = True
         is_change_folder = False
         # store data in DB
-        Answers().insert_data(user_responses)
+        if IS_SAVE_IN_DB:
+            Answers().insert_data(user_responses)
     else:
         # if index = 0 => reload list_files to reinitialize dialog
         if index == 0 and not is_global_question:
