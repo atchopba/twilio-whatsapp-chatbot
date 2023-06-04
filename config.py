@@ -9,6 +9,7 @@ load_dotenv(path.join(basedir, '.env'))
 
 class Config:
 
+    IS_SAVE_IN_DB = environ.get("IS_SAVE_IN_DB")
     MYSQL_HOST = environ.get("MYSQL_HOST")
     MYSQL_USER = environ.get("MYSQL_USER")
     MYSQL_PWD = environ.get("MYSQL_PWD")

@@ -1,3 +1,5 @@
+[![Pylint](https://github.com/atchopba/twilio-whatsapp-chatbot/actions/workflows/pylint.yml/badge.svg)](https://github.com/atchopba/twilio-whatsapp-chatbot/actions/workflows/pylint.yml)
+
 # Twilio-whatsapp-chatbot
 Twilio whatsapp chatbot.
 The dialog is configured in text files. The files are thus read in alphabetical order during the discussion.
