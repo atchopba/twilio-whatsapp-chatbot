@@ -39,7 +39,7 @@ BUSINESS_NAME = Config.BUSINESS_NAME
 
 BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
 
-IS_SAVE_IN_DB = Config.IS_SAVE_IN_DB
+IS_SAVE_IN_DB = True if Config.IS_SAVE_IN_DB.lower() == "true" else False
 
 user_responses = {}
 
