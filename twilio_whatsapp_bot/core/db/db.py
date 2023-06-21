@@ -23,14 +23,17 @@ class DB(object):
         None.
 
         '''
-        self.connection = pymysql.connect(
-            host=Config.MYSQL_HOST,
-            user=Config.MYSQL_USER,
-            password=Config.MYSQL_PWD,
-            db=Config.MYSQL_DB,
-            charset=Config.MYSQL_CHARSET,
-            cursorclass=pymysql.cursors.DictCursor
-        )
+        try:
+            self.connection = pymysql.connect(
+                host=Config.MYSQL_HOST,
+                user=Config.MYSQL_USER,
+                password=Config.MYSQL_PWD,
+                db=Config.MYSQL_DB,
+                charset=Config.MYSQL_CHARSET,
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        except Exception as e:
+            print(e)
 
     def deconnect(self) -> None:
         '''
@@ -41,7 +44,10 @@ class DB(object):
         None.
 
         '''
-        self.connection.close()
+        try:
+            self.connection.close()
+        except Exception as e:
+            print(e)
 
     def select(self, r, select_one: bool = False) -> Any:
         '''
