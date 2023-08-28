@@ -129,3 +129,11 @@ def translate_msg(tokens: Any, from_lang: str, to_lang: str) -> Any:
                 tmp_tokens.append(translator.translate(token))
         return tmp_tokens
     return tokens
+
+
+def available_answers(bot_dialog: str, trash: str = ".") -> Any:
+    REGEX_PATTERN = r"^[\d|\w|\W]\. "
+    return_ = []
+    for match in re.finditer(REGEX_PATTERN, bot_dialog, re.MULTILINE):
+        return_.append(match.group().strip().replace(trash, ""))
+    return return_

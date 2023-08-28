@@ -9,7 +9,8 @@ from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
     get_file_content, get_list_files, is_question_without_choice, \
-    load_json_file, remove_accents, replace_assistant_in_content, translate_msg
+    load_json_file, remove_accents, replace_assistant_in_content, \
+    available_answers, translate_msg
 from typing import Any
 
 LANG_FR = "fr"
@@ -296,8 +297,7 @@ def step_in_question(response_msg: str) -> str:
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
         elif (operations != "" and operations is not None
               and Operation().is_run_out(operations)
-              and (not response_msg.isnumeric() or
-                   not (1 <= int(response_msg) <= nb_rows_run_out))):
+              and not (response_msg in available_answers(current_file_content))):
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
             quote += run_out_question_part
@@ -306,10 +306,12 @@ def step_in_question(response_msg: str) -> str:
     # nb line > 1, many possibilities of responses
     else:
         # if made by request
-        if is_run_out and 1 <= int(response_msg) <= nb_rows_run_out:
+        if is_run_out and (
+            response_msg in available_answers(current_file_content)
+        ):
             is_run_out = False
             quote = step_question(current_step + 1, response_msg)
-        elif response_msg.isnumeric() and 1 <= int(response_msg) <= nb_lines-1:
+        elif response_msg in available_answers(current_file_content):
             quote = step_question(current_step + 1, response_msg)
         elif (operations != "" and operations is not None
               and Operation().is_run_in(operations)

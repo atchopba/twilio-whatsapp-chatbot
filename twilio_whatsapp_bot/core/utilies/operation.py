@@ -12,12 +12,14 @@ OP_TYPE_OUT = "out"
 OP_TYPE_IN = "in"
 OP_TYPE_SAVE = "save"
 OP_TYPE_MAP = "map"
+OP_TYPE_IF = "if"
 
 OP_TYPE_LIST = {
     OP_TYPE_OUT: OP_TYPE_OUT,
     OP_TYPE_IN: OP_TYPE_IN,
     OP_TYPE_SAVE: OP_TYPE_SAVE,
-    OP_TYPE_MAP: OP_TYPE_MAP
+    OP_TYPE_MAP: OP_TYPE_MAP,
+    OP_TYPE_IF: OP_TYPE_IF
 }
 
 OP_CHECK_NOUN = "check_noun"
@@ -38,7 +40,9 @@ OP_LIST = {
 }
 
 
-PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z0-9*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"  # noqa
+# PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z0-9*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"  # noqa
+# PATTERN_OPERATION =  r"^\{\"type\"\:\s*\".*?\"(,\s*\".*?\"\:\s*\".*?\")+\}$"
+PATTERN_OPERATION = r"^\{\"type\"\:\s*\".*?\"(,\s*\".*?\"\:\s*((\".*?\")|(\{\".*?\"\:\s*\".*?\"(,\s*\".*?\"\:\s*\".*?\")+\})))+\}$" # noqa
 
 
 def clean_operations_from_question_content(msg: str) -> str:
@@ -187,6 +191,9 @@ class Operation(object):
         return (not self.is_empty(json_) and "type" in json_ and
                 json_["type"] == OP_TYPE_MAP)
 
+    def is_run_if(self, json_: Any) -> bool:
+        return "type" in json_ and json_["type"] == OP_TYPE_IF
+
     def run_in(self, json_: Any, msg_2_check) -> bool:
         self.parse(json_)
         return_ = False
@@ -236,3 +243,18 @@ class Operation(object):
             location["lat"],
             location["lng"]
         ) if "lat" in location and "lng" in location else None
+
+    def run_if(self, json_: Any,
+               response_msg: str,
+               current_question: str
+               ) -> Any:
+        self.parse(json_)
+        tmp_tokens = current_question.split("/")
+        filename = tmp_tokens[len(tmp_tokens)-1]
+        choices = json_["choices"]
+        filenumber = ""
+        for key in choices:
+            if response_msg == key:
+                filenumber = choices[key]
+                break
+        return current_question.replace(filename, str(filenumber) + ".txt")
