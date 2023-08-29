@@ -135,5 +135,12 @@ def available_answers(bot_dialog: str, trash: str = ".") -> Any:
     REGEX_PATTERN = r"^[\d|\w|\W]\. "
     return_ = []
     for match in re.finditer(REGEX_PATTERN, bot_dialog, re.MULTILINE):
-        return_.append(match.group().strip().replace(trash, ""))
+        tmp = match.group().strip().replace(trash, "")
+        return_.append(tmp.lower())
+        if (tmp.lower() != tmp.upper()):
+            return_.append(tmp.upper())
     return return_
+
+
+def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Any:
+    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"] if is_response_alpha else ["1","2","3","4","5","6","7","8","9","10","11","12"] # noqa

@@ -213,13 +213,13 @@ class Operation(object):
         #
         return return_
 
-    def run_out(self, json_: Any) -> Any:
+    def run_out(self, json_: Any, list_available_answers: Any) -> Any:
         self.parse(json_)
         result_ = DB().select(json_["op"])
         return_ = []
-        i = 1
+        i = 0
         for r in result_:
-            return_.append(str(i) + ". " + r[json_["column"]])
+            return_.append(list_available_answers[i] + ". " + r[json_["column"]]) # noqa
             i += 1
         return return_
 
@@ -237,6 +237,8 @@ class Operation(object):
                 ) -> Any:
         # self.parse(json_)
         location = geolocate_user(api_key, response_msg, country)
+        print("==> api_key : ", api_key)
+        print("==> location : ", location)
         return geolocate_place_from_user(
             api_key,
             business_name,

@@ -10,7 +10,7 @@ from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
     get_file_content, get_list_files, is_question_without_choice, \
     load_json_file, remove_accents, replace_assistant_in_content, \
-    available_answers, translate_msg
+    available_answers, translate_msg, get_list_available_answer_run_out
 from typing import Any
 
 LANG_FR = "fr"
@@ -42,6 +42,10 @@ BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
 
 IS_SAVE_IN_DB = True if Config.IS_SAVE_IN_DB.lower() == "true" else False
 
+IS_RESPONSE_ALPHA = True if Config.IS_RESPONSE_ALPHA.lower() == "true" else False # noqa
+
+LIST_AVAILABLE_ANSWERS_RUN_OUT = get_list_available_answer_run_out(IS_RESPONSE_ALPHA) # noqa
+
 user_responses = {}
 
 list_files = get_list_files(PATHDIR_TO_DIALOG)
@@ -57,11 +61,11 @@ save_operation = None
 is_map_location = False
 map_user_geolocalisation = None
 nb_folder_question = 0
-nb_rows_run_out = -1
 is_run_out = False
 run_out_question_part = ""
 current_step = 0
 language = LANG_FR
+list_answers_run_out = []
 
 # If you have only 1 question directory for dialogue, please keep only 1 file
 # in the courtesy directory for the proper functioning of the chatbot
@@ -71,8 +75,8 @@ is_unique_question_folder = True if (
 
 def step_question(index: int, response_msg: str = "") -> str:
     global current_step, current_file, is_change_folder, is_global_question, \
-        is_last_dialog, is_run_out, list_files, nb_rows_run_out, \
-        run_out_question_part, user_responses
+        is_last_dialog, is_run_out, list_files, run_out_question_part, \
+        user_responses, list_answers_run_out
     list_files_size = len(list_files)
     quote = ""
     # verify if the index is the last question
@@ -108,12 +112,12 @@ def step_question(index: int, response_msg: str = "") -> str:
         if ("operations_found" in tmp_
                 and tmp_["operations_found"] is not None
                 and Operation().is_run_out(tmp_["operations_found"])):
-            run_out_list = Operation().run_out(tmp_["operations_found"])
-            nb_rows_run_out = len(run_out_list)
+            run_out_list = Operation().run_out(tmp_["operations_found"], LIST_AVAILABLE_ANSWERS_RUN_OUT) # noqa
             #
             is_run_out = True
             run_out_question_part = "\n" + "\n".join(run_out_list)
             quote += run_out_question_part
+            list_answers_run_out = available_answers(quote)
 
     return quote
 
@@ -271,8 +275,8 @@ def step_in_courtesy(response_msg: str) -> str:
 
 
 def step_in_question(response_msg: str) -> str:
-    global current_step, is_words_question, is_run_out, nb_rows_run_out, \
-        run_out_question_part, is_map_location
+    global current_step, is_words_question, is_run_out, \
+        run_out_question_part, is_map_location, list_answers_run_out
     quote = ""
     current_file = list_files[current_step]
     current_file_content = get_file_content(current_file)
@@ -284,7 +288,7 @@ def step_in_question(response_msg: str) -> str:
     # check if the operation is map location
     tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
     is_map_location = Operation().is_run_map(tmp_2["operations_found"])
-
+    list_response_msg = [response_msg.lower(), response_msg.upper()]
     # get nb of line of the current file
     nb_lines = len(current_file_content.split("\n"))
 
@@ -297,7 +301,7 @@ def step_in_question(response_msg: str) -> str:
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
         elif (operations != "" and operations is not None
               and Operation().is_run_out(operations)
-              and not (response_msg in available_answers(current_file_content))):
+              and not (any(x in list_response_msg for x in list_answers_run_out))): # noqa
             current_step = current_step
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
             quote += run_out_question_part
@@ -307,7 +311,7 @@ def step_in_question(response_msg: str) -> str:
     else:
         # if made by request
         if is_run_out and (
-            response_msg in available_answers(current_file_content)
+            any(x in list_response_msg for x in list_answers_run_out)
         ):
             is_run_out = False
             quote = step_question(current_step + 1, response_msg)
