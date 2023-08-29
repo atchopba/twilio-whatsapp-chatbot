@@ -54,8 +54,8 @@ def clean_operations_from_question_content(msg: str) -> str:
 
 def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
     operations_found = ""
-    bot_dialog = bot_dialog.lower()
-    for match in re.finditer(PATTERN_OPERATION, bot_dialog, re.MULTILINE):
+    tmp_bot_dialog = bot_dialog.lower()
+    for match in re.finditer(PATTERN_OPERATION, tmp_bot_dialog, re.MULTILINE):
         operations_found = match.group()
         break
     return {
