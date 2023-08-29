@@ -134,7 +134,7 @@ def step_response(incoming_msg: str) -> Any:
     user_responses[change_filepath(current_file)] = response_msg
 
     if is_save_question:
-        save_params(save_operation, response_msg)
+        save_params(save_operation, response_msg, IS_RESPONSE_ALPHA)
         is_save_question = False
 
     #
@@ -337,8 +337,11 @@ def check_msg_validity(msg: str, operation: Any) -> bool:
     return tmp_
 
 
-def save_params(operation: Any, response_msg: str) -> bool:
+def save_params(operation: Any, response_msg: str, is_response_alpha: bool = False) -> bool: # noqa
     global language
     tmp_ = Operation().run_save(operation)
     if tmp_ is not None and "param" in tmp_ and tmp_["param"] == "lang":
-        language = LANG_EN if response_msg == "2" else LANG_FR
+        language = LANG_EN if (
+            (not is_response_alpha and response_msg == "2") 
+            or (is_response_alpha and response_msg.lower() == "b")
+        ) else LANG_FR
