@@ -10,7 +10,8 @@ from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
     get_file_content, get_list_files, is_question_without_choice, \
     load_json_file, remove_accents, replace_assistant_in_content, \
-    available_answers, translate_msg, get_list_available_answer_run_out
+    available_answers, translate_msg, get_list_available_answer_run_out, \
+    calendar_create_event
 from typing import Any
 
 LANG_FR = "fr"
@@ -36,6 +37,10 @@ GOOGLE_MAPS_API_KEY = Config.GOOGLE_MAPS_API_KEY
 
 DEFAULT_COUNTRY = Config.DEFAULT_COUNTRY
 
+DEFAULT_TIMEZONE = Config.DEFAULT_TIMEZONE
+
+DEFAULT_CALENDAR_BOOKING_COLOR = Config.DEFAULT_CALENDAR_BOOKING_COLOR
+
 BUSINESS_NAME = Config.BUSINESS_NAME
 
 BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
@@ -46,7 +51,7 @@ IS_RESPONSE_ALPHA = True if Config.IS_RESPONSE_ALPHA.lower() == "true" else Fals
 
 LIST_AVAILABLE_ANSWERS_RUN_OUT = get_list_available_answer_run_out(IS_RESPONSE_ALPHA) # noqa
 
-user_responses = {}
+user_responses = []
 
 list_files = get_list_files(PATHDIR_TO_DIALOG)
 is_last_dialog = False
@@ -63,6 +68,10 @@ map_user_geolocalisation = None
 nb_folder_question = 0
 is_run_out = False
 run_out_question_part = ""
+is_run_calendar_add = False
+is_calendar_list_days_to_reserve = False
+array_run_calendar_days_proposal = []
+array_run_calendar_times_proposal = []
 current_step = 0
 language = LANG_FR
 list_answers_run_out = []
@@ -76,7 +85,9 @@ is_unique_question_folder = True if (
 def step_question(index: int, response_msg: str = "") -> str:
     global current_step, current_file, is_change_folder, is_global_question, \
         is_last_dialog, is_run_out, list_files, run_out_question_part, \
-        user_responses, list_answers_run_out
+        user_responses, list_answers_run_out, is_run_calendar_add, \
+        array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
+        is_calendar_list_days_to_reserve
     list_files_size = len(list_files)
     quote = ""
     # verify if the index is the last question
@@ -110,15 +121,22 @@ def step_question(index: int, response_msg: str = "") -> str:
         quote = tmp_["msg"]
         #
         if ("operations_found" in tmp_
-                and tmp_["operations_found"] is not None
+            and tmp_["operations_found"] is not None
                 and Operation().is_run_out(tmp_["operations_found"])):
             run_out_list = Operation().run_out(tmp_["operations_found"], LIST_AVAILABLE_ANSWERS_RUN_OUT) # noqa
             #
             is_run_out = True
-            run_out_question_part = "\n" + "\n".join(run_out_list)
+            run_out_question_part = "\n" + "\n".join(run_out_list["array"]) # noqa
             quote += run_out_question_part
             list_answers_run_out = available_answers(quote)
-
+            #
+            if (Operation().is_run_calendar_add(tmp_["operations_found"])):
+                array_run_calendar_times_proposal = run_out_list["proposal"]
+                is_run_calendar_add = True
+                is_run_out = False
+            if run_out_list["is_calendar_list_days_to_reserve"] is True:
+                array_run_calendar_days_proposal = run_out_list["proposal"]
+    #
     return quote
 
 
@@ -126,12 +144,16 @@ def step_response(incoming_msg: str) -> Any:
     global current_step, user_responses, previous_step_str, \
         is_unique_question_folder, is_last_dialog, \
         is_words_question, list_files, is_global_question, is_save_question, \
-        save_operation, language, is_map_location
+        save_operation, language, is_map_location, is_run_calendar_add, \
+        array_run_calendar_days_proposal, array_run_calendar_times_proposal
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
     media_list = []
-    user_responses[change_filepath(current_file)] = response_msg
+    user_responses.append({
+        "response": response_msg,
+        "file": change_filepath(current_file)
+    })
 
     if is_save_question:
         save_params(save_operation, response_msg, IS_RESPONSE_ALPHA)
@@ -141,6 +163,7 @@ def step_response(incoming_msg: str) -> Any:
     is_map_location_tmp = False
     locations = []
     quote_tmp = ""
+    #
     if is_map_location:
         locations = Operation().run_map(
             GOOGLE_MAPS_API_KEY,
@@ -150,6 +173,23 @@ def step_response(incoming_msg: str) -> Any:
         )
         quote_tmp += BUSINESS_GEOLOCATE_SENTENCE + "\n" + "\n".join(locations)
         is_map_location_tmp = True
+
+    # calendar add event
+    if is_run_calendar_add:
+        index_booking_day = user_responses[len(user_responses)-2]["response"]
+        tmp_booking_day = array_run_calendar_days_proposal[index_booking_day].split(" ")[1] # noqa
+        tmp_booking_time = array_run_calendar_times_proposal[response_msg].split("-") # noqa
+        # create event
+        calendar_create_event(
+            DEFAULT_TIMEZONE,
+            "toto summary",
+            "toto description",
+            tmp_booking_day,
+            tmp_booking_time[0].strip(),
+            tmp_booking_time[1].strip(),
+            DEFAULT_CALENDAR_BOOKING_COLOR
+        )
+        is_run_calendar_add = False
 
     # if question is a courtesy
     if (
@@ -342,6 +382,6 @@ def save_params(operation: Any, response_msg: str, is_response_alpha: bool = Fal
     tmp_ = Operation().run_save(operation)
     if tmp_ is not None and "param" in tmp_ and tmp_["param"] == "lang":
         language = LANG_EN if (
-            (not is_response_alpha and response_msg == "2") 
+            (not is_response_alpha and response_msg == "2")
             or (is_response_alpha and response_msg.lower() == "b")
         ) else LANG_FR

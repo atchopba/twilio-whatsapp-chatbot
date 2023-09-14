@@ -4,7 +4,7 @@ import re
 import requests
 from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
-    check_phonenumber, check_str, check_email
+    check_phonenumber, check_str, check_email, get_list_days_to_reserve
 from typing import Any
 
 
@@ -29,6 +29,11 @@ OP_CHECK_PHONENUMBER = "check_phonenumber"
 OP_CHECK_CITY = "check_city"
 OP_CHECK_EMAIL = "check_email"
 OP_SELECT = "select"
+OP_CALENDAR_ADD = "calendar_add"
+OP_CALENDAR_LIST_DAYS_2_RESERVE = "calendar_list_days_2_reserve"
+OP_CALENDAR_LIST_USER = "calendar_list_user"
+OP_CALENDAR_LIST_ALL = "calendar_list_all"
+OP_CALENDAR_DELETE = "calendar_delete"
 
 OP_LIST = {
     OP_CHECK_CITY,
@@ -36,8 +41,16 @@ OP_LIST = {
     OP_CHECK_NUMBER,
     OP_CHECK_PHONENUMBER,
     OP_CHECK_STR,
-    OP_CHECK_EMAIL
+    OP_CHECK_EMAIL,
+    OP_CALENDAR_ADD,
+    OP_CALENDAR_LIST_DAYS_2_RESERVE,
+    OP_CALENDAR_LIST_USER,
+    OP_CALENDAR_LIST_ALL,
+    OP_CALENDAR_DELETE
 }
+
+IS_OP_SELECT = False
+IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
 
 
 # PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z0-9*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"  # noqa
@@ -117,6 +130,7 @@ class Operation(object):
         self.type_ = ""
         self.op_ = ""
         self.column_ = ""
+        self.next_op = None
         pass
 
     '''
@@ -124,9 +138,11 @@ class Operation(object):
     @raise Exception
     '''
     def parse(self, json_) -> None:
+        global IS_OP_SELECT, IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
         self.type_ = json_["type"] if "type" in json_ else ""
         self.op_ = json_["op"] if "op" in json_ else ""
         self.column_ = json_["column"] if "column" in json_ else ""
+        self.next_op = json_["next_op"] if "next_op" in json_ else ""
         #
         msg_1 = "is an unknown operation. Notify the system administrator"
         msg_2 = '''is an unknow operation type. Please notify the system
@@ -135,10 +151,14 @@ class Operation(object):
                 and self.type_ in OP_TYPE_LIST
                 and self.op_ is not None):
             #
-            if (self.type_ == OP_TYPE_OUT
-                    and self.op_.startswith(OP_SELECT)
-                    and self.column_ is not None):
-                pass
+            if self.type_ == OP_TYPE_OUT:
+                if (self.op_.startswith(OP_SELECT) and self.column_ is not None): # noqa
+                    IS_OP_SELECT = True
+                elif self.op_ == OP_CALENDAR_LIST_DAYS_2_RESERVE:
+                    IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = True
+                else:
+                    IS_OP_SELECT = False
+                    IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
             #
             elif self.type_ == OP_TYPE_IN and self.op_ in OP_LIST:
                 pass
@@ -194,6 +214,11 @@ class Operation(object):
     def is_run_if(self, json_: Any) -> bool:
         return "type" in json_ and json_["type"] == OP_TYPE_IF
 
+    def is_run_calendar_add(self, json_: Any) -> bool:
+        return (not self.is_empty(json_) and
+                "type" in json_ and json_["type"] == OP_TYPE_OUT and
+                "next_op" in json_ and json_["next_op"] == OP_CALENDAR_ADD)
+
     def run_in(self, json_: Any, msg_2_check) -> bool:
         self.parse(json_)
         return_ = False
@@ -214,14 +239,32 @@ class Operation(object):
         return return_
 
     def run_out(self, json_: Any, list_available_answers: Any) -> Any:
+        global IS_OP_SELECT, IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
         self.parse(json_)
-        result_ = DB().select(json_["op"])
-        return_ = []
-        i = 0
-        for r in result_:
-            return_.append(list_available_answers[i] + ". " + r[json_["column"]]) # noqa
-            i += 1
-        return return_
+        operation = json_["op"]
+        return_proposal = {}
+        return_array = []
+        is_cldtr = False
+        # if operation select in DB
+        if IS_OP_SELECT:
+            result_ = DB().select(operation)
+            i = 0
+            for r in result_:
+                return_array.append(list_available_answers[i] + ". " + r[json_["column"]]) # noqa
+                return_proposal[list_available_answers[i]] = r[json_["column"]]
+                i += 1
+        elif IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE:
+            is_cldtr = IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
+            IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
+            tmp_array = get_list_days_to_reserve("1") # noqa
+            for i in range(0, len(tmp_array)):
+                return_array.append(list_available_answers[i] + ". " + tmp_array[i]) # noqa
+                return_proposal[list_available_answers[i]] = tmp_array[i]
+        return {
+            "is_calendar_list_days_to_reserve": is_cldtr, # noqa
+            "proposal": return_proposal,
+            "array": return_array
+        }
 
     def run_save(self, json_: Any) -> Any:
         self.parse(json_)
@@ -237,8 +280,6 @@ class Operation(object):
                 ) -> Any:
         # self.parse(json_)
         location = geolocate_user(api_key, response_msg, country)
-        print("==> api_key : ", api_key)
-        print("==> location : ", location)
         return geolocate_place_from_user(
             api_key,
             business_name,

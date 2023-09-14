@@ -1,1 +1,2 @@
-Merci d'avoir répondu et à bientôt dans notre service.
+Quel crénau préférez-vous?
+{"type": "out", "op": "SELECT CONCAT(begin_time, ' - ', end_time) AS slot FROM time_slots", "column": "slot", "next_op": "calendar_add"}
