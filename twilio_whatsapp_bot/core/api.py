@@ -35,6 +35,8 @@ PATHDIR_TO_QUESTIONS = PATHDIR_TO_DIALOG + "//questions"
 
 GOOGLE_MAPS_API_KEY = Config.GOOGLE_MAPS_API_KEY
 
+DEFAULT_MAPS_LOCATION_ERROR = Config.DEFAULT_MAPS_LOCATION_ERROR
+
 DEFAULT_COUNTRY = Config.DEFAULT_COUNTRY
 
 DEFAULT_TIMEZONE = Config.DEFAULT_TIMEZONE
@@ -162,7 +164,6 @@ def step_response(incoming_msg: str) -> Any:
     #
     is_map_location_tmp = False
     locations = []
-    quote_tmp = ""
     #
     if is_map_location:
         locations = Operation().run_map(
@@ -171,7 +172,10 @@ def step_response(incoming_msg: str) -> Any:
             DEFAULT_COUNTRY,
             BUSINESS_NAME
         )
-        quote_tmp += BUSINESS_GEOLOCATE_SENTENCE + "\n" + "\n".join(locations)
+        if locations is None:
+            quote_tmp = DEFAULT_MAPS_LOCATION_ERROR
+        else:
+            quote_tmp = BUSINESS_GEOLOCATE_SENTENCE + "\n" + "\n".join(locations) # noqa
         is_map_location_tmp = True
 
     # calendar add event

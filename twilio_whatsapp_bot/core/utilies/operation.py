@@ -285,7 +285,7 @@ class Operation(object):
             business_name,
             location["lat"],
             location["lng"]
-        ) if "lat" in location and "lng" in location else None
+        ) if location is not None and "lat" in location and "lng" in location else None
 
     def run_if(self, json_: Any,
                response_msg: str,
