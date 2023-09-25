@@ -9,13 +9,9 @@ from pathlib import Path
 import re
 from typing import Any
 from unidecode import unidecode
-import datetime
-from twilio_whatsapp_bot.core.utilies.cal_setup import get_calendar_service
 
 
 DEFAULT_CALLING_CODE = Config.DEFAULT_CALLING_CODE
-WORK_ON_SATURDAY = True if Config.WORK_ON_SATURDAY.lower() == "true" else False # noqa
-WORK_ON_SUNDAY = True if Config.WORK_ON_SUNDAY.lower() == "true" else False # noqa
 
 
 def get_data_from_url(received_message: str, index: str) -> str:
@@ -48,8 +44,10 @@ def remove_accents(msg: str) -> str:
     return unidecode(msg)
 
 
-def replace_assistant_in_content(file_content: str, assistant: str) -> str:
-    return file_content.replace("{ASSISTANT}", assistant).replace("{assistant}", assistant) # noqa
+def replace_words_in_content(file_content: str, regex_: str, words: str) -> str:
+    regex_lower = regex_.lower()
+    regex_upper = regex_.upper()
+    return file_content.replace(regex_lower, words).replace(regex_upper, words) # noqa
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
@@ -124,6 +122,15 @@ def check_email(email_adr: str) -> bool:
     return True if re.match(r"[^@]+@[^@]+\.[^@]+", email_adr) else False
 
 
+def random_generator() -> str:
+    import string
+    import secrets
+    alphabet = string.ascii_letters + string.digits + "-_+$|()[]{}#@"
+    password = ''.join(secrets.choice(alphabet) for i in range(32))
+    return password
+
+
+
 def translate_msg(tokens: Any, from_lang: str, to_lang: str) -> Any:
     if from_lang != to_lang:
         tmp_tokens = []
@@ -147,61 +154,5 @@ def available_answers(bot_dialog: str, trash: str = ".") -> Any:
 
 
 def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Any:
-    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"] if is_response_alpha else ["1","2","3","4","5","6","7","8","9","10","11","12"] # noqa
-
-
-def get_list_days_to_reserve(lang: str) -> Any:
-    days = {
-        "monday": "Lundi",
-        "tuesday": "Mardi",
-        "wednesday": "Mercredi",
-        "thursday": "Jeudi",
-        "friday": "Vendredi",
-        "saturday": "Samedi",
-        "sunday": "Dimanche"
-    }
-    i = 0
-    array_ = []
-    while len(array_) < 6:
-        date_tmp = datetime.datetime.now() + datetime.timedelta(days=i)
-        dayofweek = date_tmp.strftime('%A')
-        if lang != "2":
-            dayofweek = days[date_tmp.strftime('%A').lower()]
-        # if not (5 <= date_tmp.weekday() <= 6):
-        weekday = date_tmp.weekday()
-        if ((WORK_ON_SATURDAY and weekday == 5) or
-            (WORK_ON_SUNDAY and weekday == 6) or (weekday != 5 and weekday != 6)) :  # noqa
-            # print("==> ", (str(dayofweek) + " " + str(date_tmp.strftime("%d/%m/%Y"))))  # noqa
-            array_.append(str(dayofweek) + " " + str(date_tmp.strftime("%d/%m/%Y")))  # noqa
-        i = i+1
-    return array_
-
-
-def calendar_create_event(timeZone: str, summary: str, description: str,
-                          day_: str, start: str, end: str,
-                          color: str) -> Any:
-    # creates one hour event tomorrow 10 AM IST
-    service = get_calendar_service()
-    #
-    tmp_day = day_.split("/")
-    tomorrow = datetime.datetime(
-        int(tmp_day[2]),
-        int(tmp_day[1]),
-        int(tmp_day[0])
-    )
-    start_tmp = start.split(":")
-    end_tmp = end.split(":")
-    start = (tomorrow + datetime.timedelta(hours=int(start_tmp[0]), minutes=int(start_tmp[1]))).isoformat()  # noqa
-    end = (tomorrow + datetime.timedelta(hours=int(end_tmp[0]), minutes=int(end_tmp[1]))).isoformat()  # noqa
-    #
-    event_result = service.events().insert(calendarId='primary',
-        body = { # noqa
-            "summary": summary,
-            "description": description,
-            "colorId": color,
-            "start": {"dateTime": start, "timeZone": timeZone},
-            "end": {"dateTime": end, "timeZone": timeZone},
-        }
-    ).execute()
-    #
-    return event_result["id"] if event_result["id"] is not None else ""
+    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"] if is_response_alpha else ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"] # noqa

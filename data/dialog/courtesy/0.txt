@@ -1,2 +1,3 @@
 Bonjour.
 Comment puis-je vous appeler?
+{"type": "save", "param": "name"}

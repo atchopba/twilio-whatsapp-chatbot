@@ -1,11 +1,14 @@
 #!/usr/bin/python
+from config import Config
 import json
 import re
 import requests
 from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
-    check_phonenumber, check_str, check_email, get_list_days_to_reserve
+    check_phonenumber, check_str, check_email, random_generator
 from typing import Any
+import datetime
+from twilio_whatsapp_bot.core.utilies.cal_setup import get_calendar_service
 
 
 OP_TYPE_OUT = "out"
@@ -52,6 +55,9 @@ OP_LIST = {
 IS_OP_SELECT = False
 IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
 
+WORK_ON_SATURDAY = True if Config.WORK_ON_SATURDAY.lower() == "true" else False # noqa
+WORK_ON_SUNDAY = True if Config.WORK_ON_SUNDAY.lower() == "true" else False # noqa
+
 
 # PATTERN_OPERATION = r"^\{\"type\"\:\s*\"[a-z0-9*\s'=_]*\"(,\s*\"[a-zA-Z*\s_]*\"\:\s*\"[a-zA-Z*\s'=_(),-;]*\")+\}$"  # noqa
 # PATTERN_OPERATION =  r"^\{\"type\"\:\s*\".*?\"(,\s*\".*?\"\:\s*\".*?\")+\}$"
@@ -60,8 +66,6 @@ PATTERN_OPERATION = r"^\{\"type\"\:\s*\".*?\"(,\s*\".*?\"\:\s*((\".*?\")|(\{\".*
 
 def clean_operations_from_question_content(msg: str) -> str:
     tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
-    # if tmp_ != msg:
-    #    tmp_ = tmp_.replace("\n", "")
     return tmp_
 
 
@@ -122,6 +126,74 @@ def geolocate_place_from_user(api_key: str, business_name: str, lat: float, lng:
             if len(locations) > 0:
                 break
     return locations
+
+
+def get_list_days_to_reserve(lang: str) -> Any:
+    days = {
+        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
+    }
+    i = 0
+    array_ = []
+    while len(array_) < 6:
+        date_tmp = datetime.datetime.now() + datetime.timedelta(days=i)
+        dayofweek = date_tmp.strftime('%A')
+        if lang != "2":
+            dayofweek = days[date_tmp.strftime('%A').lower()]
+        # if not (5 <= date_tmp.weekday() <= 6):
+        weekday = date_tmp.weekday()
+        if ((WORK_ON_SATURDAY and weekday == 5) or
+            (WORK_ON_SUNDAY and weekday == 6) or (weekday != 5 and weekday != 6)) :  # noqa
+            array_.append(str(dayofweek) + " " + str(date_tmp.strftime("%d/%m/%Y")))  # noqa
+        i = i+1
+    return array_
+
+
+def calendar_create_event(timeZone: str, summary: str, description: str,
+                          day_: str, start: str, end: str,
+                          color: str) -> Any:
+    # creates one hour event tomorrow 10 AM IST
+    service = get_calendar_service()
+    #
+    tmp_day = day_.split("/")
+    tomorrow = datetime.datetime(
+        int(tmp_day[2]),
+        int(tmp_day[1]),
+        int(tmp_day[0])
+    )
+    start_tmp = start.split(":")
+    end_tmp = end.split(":")
+    start = (tomorrow + datetime.timedelta(hours=int(start_tmp[0]), minutes=int(start_tmp[1]))).isoformat()  # noqa
+    end = (tomorrow + datetime.timedelta(hours=int(end_tmp[0]), minutes=int(end_tmp[1]))).isoformat()  # noqa
+    #
+    event_result = service.events().insert(calendarId='primary',
+        body = { # noqa
+            "summary": summary,
+            "description": description,
+            "colorId": color,
+            "start": {"dateTime": start, "timeZone": timeZone},
+            "end": {"dateTime": end, "timeZone": timeZone},
+        }
+    ).execute()
+    #
+    return event_result["id"] if event_result["id"] is not None else None
+
+
+def make_new_token() -> str:
+    token_lst = DB().select("select token from user_sessions")
+    term_ = random_generator()
+    while term_ in token_lst:
+        term_ = random_generator()
+    # insert into user_sessions
+    sql = "INSERT INTO user_sessions (token) VALUES ('{0}')".format(term_)
+    DB().insert_without_datas(sql)
+    #
+    return term_
 
 
 class Operation(object):
@@ -266,13 +338,18 @@ class Operation(object):
             "array": return_array
         }
 
-    def run_save(self, json_: Any) -> Any:
+    def run_save(self, json_: Any, user_token: str, response_msg) -> Any:
         self.parse(json_)
+        #
+        sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, json_["param"], response_msg) # noqa
+        DB().insert_without_datas(sql)
+        #
         return {
             "param": json_["param"]
         }
 
     def run_map(self,
+                user_token: str,
                 api_key: str,
                 response_msg: str,
                 country: str,
@@ -280,12 +357,19 @@ class Operation(object):
                 ) -> Any:
         # self.parse(json_)
         location = geolocate_user(api_key, response_msg, country)
-        return geolocate_place_from_user(
-            api_key,
-            business_name,
-            location["lat"],
-            location["lng"]
-        ) if location is not None and "lat" in location and "lng" in location else None
+        around_user = None
+        if location is not None and "lat" in location and "lng" in location:
+            around_user = geolocate_place_from_user(
+                api_key,
+                business_name,
+                location["lat"],
+                location["lng"]
+            )
+            # insert into user_activities
+            sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'geolocate', response_msg) # noqa
+            DB().insert_without_datas(sql)
+        #
+        return around_user
 
     def run_if(self, json_: Any,
                response_msg: str,
@@ -301,3 +385,16 @@ class Operation(object):
                 filenumber = choices[key]
                 break
         return current_question.replace(filename, str(filenumber) + ".txt")
+
+    def run_calendar_add(self, user_token: str, timeZone: str, summary: str,
+                         description: str, day_: str, start: str, end: str,
+                         color: str) -> Any:
+        if calendar_create_event(timeZone, summary, description, day_, start, end, color): # noqa
+            # insert into user_activities
+            sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', day_ + ' from ' + start + ' to ' + end) # noqa
+            DB().insert_without_datas(sql)
+            #
+            sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_payment', None) # noqa
+            DB().insert_without_datas(sql)
+        #
+        return

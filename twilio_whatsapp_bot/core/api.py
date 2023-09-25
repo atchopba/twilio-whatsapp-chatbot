@@ -3,16 +3,16 @@ from config import Config
 from twilio_whatsapp_bot.core.utilies.data import \
     clean_data_from_question_content, get_datas_in_bot_dialog
 from twilio_whatsapp_bot.core.utilies.operation import Operation, \
-    get_operations_in_bot_dialog
+    get_operations_in_bot_dialog, make_new_token
 from twilio_whatsapp_bot.core.db.answers import Answers
 from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
     get_file_content, get_list_files, is_question_without_choice, \
-    load_json_file, remove_accents, replace_assistant_in_content, \
-    available_answers, translate_msg, get_list_available_answer_run_out, \
-    calendar_create_event
+    load_json_file, remove_accents, replace_words_in_content, \
+    available_answers, translate_msg, get_list_available_answer_run_out
 from typing import Any
+
 
 LANG_FR = "fr"
 LANG_EN = "en"
@@ -22,9 +22,7 @@ QUESTION_STR = "question"
 
 BAD_ANSWER_STR = "*" + Config.BAD_ANSWER_STR + "*"
 BAD_ANSWER_CHOICE_STR = "*" + Config.BAD_ANSWER_CHOICE_STR + "*"
-PROPOSE_ALL_QUESTIONS_FOLDER_STR = ("_"
-                                    + Config.PROPOSE_ALL_QUESTIONS_FOLDER_STR
-                                    + "_")
+PROPOSE_ALL_QUESTIONS_FOLDER_STR = ("_" + Config.PROPOSE_ALL_QUESTIONS_FOLDER_STR + "_") # noqa
 
 DIALOG_ASSISTANT = Config.DIALOG_ASSISTANT if (
     Config.DIALOG_ASSISTANT is not None) else "David"
@@ -43,6 +41,8 @@ DEFAULT_TIMEZONE = Config.DEFAULT_TIMEZONE
 
 DEFAULT_CALENDAR_BOOKING_COLOR = Config.DEFAULT_CALENDAR_BOOKING_COLOR
 
+DEFAULT_MOMO_URL = Config.DEFAULT_MOMO_URL
+
 BUSINESS_NAME = Config.BUSINESS_NAME
 
 BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
@@ -57,6 +57,7 @@ user_responses = []
 
 list_files = get_list_files(PATHDIR_TO_DIALOG)
 is_last_dialog = False
+user_token = None
 
 previous_step_str = "courtesy"
 propose_all_questions_folder = ""
@@ -89,9 +90,20 @@ def step_question(index: int, response_msg: str = "") -> str:
         is_last_dialog, is_run_out, list_files, run_out_question_part, \
         user_responses, list_answers_run_out, is_run_calendar_add, \
         array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
-        is_calendar_list_days_to_reserve
+        is_calendar_list_days_to_reserve, user_token
     list_files_size = len(list_files)
     quote = ""
+
+    # if index = 0, make a user_token
+    if index == 0:
+        user_token = make_new_token()
+        #
+        tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[0])) # noqa
+        # check if operation is save
+        save_operation = tmp_['operations_found']
+        if Operation().is_run_save(save_operation):
+            save_params(save_operation, user_token, response_msg)
+
     # verify if the index is the last question
     if index == list_files_size - 1:
         is_last_dialog = True
@@ -147,7 +159,8 @@ def step_response(incoming_msg: str) -> Any:
         is_unique_question_folder, is_last_dialog, \
         is_words_question, list_files, is_global_question, is_save_question, \
         save_operation, language, is_map_location, is_run_calendar_add, \
-        array_run_calendar_days_proposal, array_run_calendar_times_proposal
+        array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
+        user_token
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
@@ -158,7 +171,7 @@ def step_response(incoming_msg: str) -> Any:
     })
 
     if is_save_question:
-        save_params(save_operation, response_msg, IS_RESPONSE_ALPHA)
+        save_params(save_operation, user_token, response_msg, IS_RESPONSE_ALPHA) # noqa
         is_save_question = False
 
     #
@@ -167,6 +180,7 @@ def step_response(incoming_msg: str) -> Any:
     #
     if is_map_location:
         locations = Operation().run_map(
+            user_token,
             GOOGLE_MAPS_API_KEY,
             incoming_msg,
             DEFAULT_COUNTRY,
@@ -184,7 +198,8 @@ def step_response(incoming_msg: str) -> Any:
         tmp_booking_day = array_run_calendar_days_proposal[index_booking_day].split(" ")[1] # noqa
         tmp_booking_time = array_run_calendar_times_proposal[response_msg].split("-") # noqa
         # create event
-        calendar_create_event(
+        Operation().run_calendar_add(
+            user_token,
             DEFAULT_TIMEZONE,
             "toto summary",
             "toto description",
@@ -232,7 +247,9 @@ def step_response(incoming_msg: str) -> Any:
             quote = BAD_ANSWER_CHOICE_STR + "\n\n"
             quote += propose_all_questions_folder
     #
-    quote = replace_assistant_in_content(quote, DIALOG_ASSISTANT)
+    quote = replace_words_in_content(quote, "{ASSISTANT}", DIALOG_ASSISTANT)
+    quote = replace_words_in_content(quote, "{MOMO_URL}", DEFAULT_MOMO_URL)
+    quote = replace_words_in_content(quote, "{USER_TOKEN}", user_token)
     #
     check_content_msg = check_content_is_2_msg(quote)
     #
@@ -258,7 +275,8 @@ def step_response(incoming_msg: str) -> Any:
 def step_in_courtesy(response_msg: str) -> str:
     global current_step, list_files, is_change_folder, is_global_question, \
         is_unique_question_folder, is_words_question, nb_folder_question, \
-        propose_all_questions_folder, is_save_question, save_operation
+        propose_all_questions_folder, is_save_question, save_operation, \
+        user_token
 
     next_file = ""
 
@@ -266,7 +284,8 @@ def step_in_courtesy(response_msg: str) -> str:
         tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1])) # noqa
         # check if operation is save
         save_operation = tmp_['operations_found']
-        is_save_question = Operation().is_run_save(save_operation)
+        if is_save_question:
+            is_save_question = Operation().is_run_save(save_operation)
         #
         next_courtesy_content = tmp_['msg']
         next_file = list_files[current_step + 1]
@@ -381,9 +400,11 @@ def check_msg_validity(msg: str, operation: Any) -> bool:
     return tmp_
 
 
-def save_params(operation: Any, response_msg: str, is_response_alpha: bool = False) -> bool: # noqa
+def save_params(operation: Any, user_token: str, response_msg: str, is_response_alpha: bool = False) -> bool: # noqa
     global language
-    tmp_ = Operation().run_save(operation)
+    # save the param in the DB
+    tmp_ = Operation().run_save(operation, user_token, response_msg)
+    #
     if tmp_ is not None and "param" in tmp_ and tmp_["param"] == "lang":
         language = LANG_EN if (
             (not is_response_alpha and response_msg == "2")
