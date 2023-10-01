@@ -2,9 +2,9 @@
 from config import Config
 from twilio_whatsapp_bot.core.utilies.data import \
     clean_data_from_question_content, get_datas_in_bot_dialog
-from twilio_whatsapp_bot.core.utilies.operation import Operation, \
-    get_operations_in_bot_dialog, make_new_token
-from twilio_whatsapp_bot.core.db.answers import Answers
+from twilio_whatsapp_bot.core.utilies.operation import Operation
+from twilio_whatsapp_bot.core.utilies.functions import make_new_token, \
+    get_operations_in_bot_dialog
 from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
