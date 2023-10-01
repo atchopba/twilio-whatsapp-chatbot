@@ -111,15 +111,15 @@ def step_question(index: int, response_msg: str = "") -> str:
         quote = get_file_content(list_files[list_files_size - 1])
         quote = quote.replace("{}", response_msg.upper())
         # store data in DB
-        if IS_SAVE_IN_DB:
-            Answers().insert_data(user_responses)
+        # if IS_SAVE_IN_DB:
+        #    Answers().insert_data(user_responses)
 
     elif index == list_files_size:
         is_last_dialog = True
         is_change_folder = False
         # store data in DB
-        if IS_SAVE_IN_DB:
-            Answers().insert_data(user_responses)
+        # if IS_SAVE_IN_DB:
+        #    Answers().insert_data(user_responses)
     else:
         # if index = 0 => reload list_files to reinitialize dialog
         if index == 0 and not is_global_question:
@@ -173,7 +173,6 @@ def step_response(incoming_msg: str) -> Any:
     if is_save_question:
         save_params(save_operation, user_token, response_msg, IS_RESPONSE_ALPHA) # noqa
         is_save_question = False
-
     #
     is_map_location_tmp = False
     locations = []
