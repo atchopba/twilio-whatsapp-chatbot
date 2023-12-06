@@ -1,2 +1,2 @@
-Où vous situez-vous présentement?
-{"type": "map", "op": "geolocate"}
+Quel crénau préférez-vous?
+{"type": "out", "op": "SELECT CONCAT(begin_time, ' - ', end_time) AS slot FROM time_slots", "column": "slot", "next_op": "calendar_add"}

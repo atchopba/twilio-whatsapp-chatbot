@@ -44,8 +44,10 @@ def remove_accents(msg: str) -> str:
     return unidecode(msg)
 
 
-def replace_assistant_in_content(file_content: str, assistant: str) -> str:
-    return file_content.replace("{ASSISTANT}", assistant).replace("{assistant}", assistant) # noqa
+def replace_words_in_content(file_content: str, regex_: str, words: str) -> str:
+    regex_lower = regex_.lower()
+    regex_upper = regex_.upper()
+    return file_content.replace(regex_lower, words).replace(regex_upper, words) # noqa
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
@@ -120,6 +122,15 @@ def check_email(email_adr: str) -> bool:
     return True if re.match(r"[^@]+@[^@]+\.[^@]+", email_adr) else False
 
 
+def random_generator() -> str:
+    import string
+    import secrets
+    alphabet = string.ascii_letters + string.digits + "-_+$|()[]{}#@"
+    password = ''.join(secrets.choice(alphabet) for i in range(32))
+    return password
+
+
+
 def translate_msg(tokens: Any, from_lang: str, to_lang: str) -> Any:
     if from_lang != to_lang:
         tmp_tokens = []
@@ -129,3 +140,19 @@ def translate_msg(tokens: Any, from_lang: str, to_lang: str) -> Any:
                 tmp_tokens.append(translator.translate(token))
         return tmp_tokens
     return tokens
+
+
+def available_answers(bot_dialog: str, trash: str = ".") -> Any:
+    REGEX_PATTERN = r"^[\d|\w|\W]\. "
+    return_ = []
+    for match in re.finditer(REGEX_PATTERN, bot_dialog, re.MULTILINE):
+        tmp = match.group().strip().replace(trash, "")
+        return_.append(tmp.lower())
+        if (tmp.lower() != tmp.upper()):
+            return_.append(tmp.upper())
+    return return_
+
+
+def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Any:
+    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"] if is_response_alpha else ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"] # noqa

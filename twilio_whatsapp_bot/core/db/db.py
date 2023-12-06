@@ -111,3 +111,32 @@ class DB(object):
             print("Erreur lors de l'execution : ", exception)
         self.deconnect()
         return return_
+
+    def insert_without_datas(self, sql: str) -> int:
+        '''
+        Insert a row data into a table
+
+        Parameters
+        ----------
+        sql : String
+            Request to execute.
+        datas : Any
+            Row data to insert
+
+        Returns
+        -------
+        Int
+            Number of rows data inserts.
+
+        '''
+        self.connect()
+        return_ = -1
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(sql)
+                self.connection.commit()
+                return_ = cursor.rowcount
+        except Exception as exception:
+            print("Erreur lors de l'execution : ", exception)
+        self.deconnect()
+        return return_

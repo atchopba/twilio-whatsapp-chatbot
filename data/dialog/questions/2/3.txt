@@ -1,1 +1,2 @@
-Merci d'avoir répondu et à bientôt dans notre service.
+Veuillez regler pour votre consultation.
+{MOMO_URL}{USER_TOKEN}

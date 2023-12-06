@@ -1,4 +1,7 @@
 .env
 *.pyc
 .venv
+credentials.json
+out.json
 test*.py
+token.pickle
