@@ -5,7 +5,6 @@ import re
 import requests
 import datetime
 from twilio_whatsapp_bot.core.db.db import DB
-from twilio_whatsapp_bot.core.utilies.cal_setup import get_calendar_service
 from twilio_whatsapp_bot.core.helpers import random_generator
 from typing import Any
 
@@ -106,36 +105,6 @@ def get_list_days_to_reserve(lang: str) -> Any:
             array_.append(str(dayofweek) + " " + str(date_tmp.strftime("%d/%m/%Y")))  # noqa
         i = i+1
     return array_
-
-
-def calendar_create_event(timeZone: str, summary: str, description: str,
-                          day_: str, start: str, end: str,
-                          color: str) -> Any:
-    # creates one hour event tomorrow 10 AM IST
-    service = get_calendar_service()
-    #
-    tmp_day = day_.split("/")
-    tomorrow = datetime.datetime(
-        int(tmp_day[2]),
-        int(tmp_day[1]),
-        int(tmp_day[0])
-    )
-    start_tmp = start.split(":")
-    end_tmp = end.split(":")
-    start = (tomorrow + datetime.timedelta(hours=int(start_tmp[0]), minutes=int(start_tmp[1]))).isoformat()  # noqa
-    end = (tomorrow + datetime.timedelta(hours=int(end_tmp[0]), minutes=int(end_tmp[1]))).isoformat()  # noqa
-    #
-    event_result = service.events().insert(calendarId='primary',
-        body = { # noqa
-            "summary": summary,
-            "description": description,
-            "colorId": color,
-            "start": {"dateTime": start, "timeZone": timeZone},
-            "end": {"dateTime": end, "timeZone": timeZone},
-        }
-    ).execute()
-    #
-    return event_result["id"] if event_result["id"] is not None else None
 
 
 def make_new_token() -> str:
