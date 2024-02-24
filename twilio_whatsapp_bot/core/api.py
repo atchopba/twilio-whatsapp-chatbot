@@ -39,8 +39,6 @@ DEFAULT_COUNTRY = Config.DEFAULT_COUNTRY
 
 DEFAULT_TIMEZONE = Config.DEFAULT_TIMEZONE
 
-DEFAULT_CALENDAR_BOOKING_COLOR = Config.DEFAULT_CALENDAR_BOOKING_COLOR
-
 DEFAULT_MOMO_URL = Config.DEFAULT_MOMO_URL
 
 BUSINESS_NAME = Config.BUSINESS_NAME
@@ -204,8 +202,7 @@ def step_response(incoming_msg: str) -> Any:
             "toto description",
             tmp_booking_day,
             tmp_booking_time[0].strip(),
-            tmp_booking_time[1].strip(),
-            DEFAULT_CALENDAR_BOOKING_COLOR
+            tmp_booking_time[1].strip()
         )
         is_run_calendar_add = False
 
