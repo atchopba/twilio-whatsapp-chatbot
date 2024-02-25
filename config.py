@@ -35,8 +35,6 @@ class Config:
 
     DEFAULT_COUNTRY = environ.get("DEFAULT_COUNTRY")
 
-    DEFAULT_TIMEZONE = environ.get("DEFAULT_TIMEZONE")
-
     DEFAULT_MOMO_URL = environ.get("DEFAULT_MOMO_URL")
 
     WORK_ON_SATURDAY = environ.get("WORK_ON_SATURDAY")
