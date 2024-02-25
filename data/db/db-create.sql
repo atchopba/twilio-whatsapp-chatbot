@@ -89,7 +89,7 @@ DROP TABLE IF EXISTS `user_calendar_events`;
 CREATE TABLE `user_calendar_events` (
 	`id` INT AUTO_INCREMENT,
 	`token` VARCHAR(64) NOT NULL,
-  `patient` VARCHAR(128) NULL,
+  `person` VARCHAR(128) NULL,
 	`event_date` VARCHAR(128) DEFAULT NULL,
 	`start_time`TIME DEFAULT NULL,
   `end_time` TIME DEFAULT NULL,
