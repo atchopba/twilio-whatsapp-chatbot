@@ -238,14 +238,14 @@ class Operation(object):
                 break
         return current_question.replace(filename, str(filenumber) + ".txt")
 
-    def run_calendar_add(self, user_token: str, timeZone: str, summary: str,
-                         description: str, event_date: str, start_time: str,
+    def run_calendar_add(self, user_token: str, person: str,
+                         event_date: str, start_time: str,
                          end_time: str) -> Any:
         # insert into user_activities
         sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', event_date + ' from ' + start_time + ' to ' + end_time) # noqa
         DB().insert_without_datas(sql)
         # insert into user_calendar_events
-        sql = "INSERT INTO user_calendar_events (token, patient, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, 'patient_0', event_date, start_time, end_time) # noqa
+        sql = "INSERT INTO user_calendar_events (token, person, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, person, event_date, start_time, end_time) # noqa
         DB().insert_without_datas(sql)
         #
         return

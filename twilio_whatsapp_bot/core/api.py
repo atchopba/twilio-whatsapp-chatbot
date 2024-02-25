@@ -73,6 +73,7 @@ is_run_calendar_add = False
 is_calendar_list_days_to_reserve = False
 array_run_calendar_days_proposal = []
 array_run_calendar_times_proposal = []
+array_operation_saving_params = {}
 current_step = 0
 language = LANG_FR
 list_answers_run_out = []
@@ -88,19 +89,20 @@ def step_question(index: int, response_msg: str = "") -> str:
         is_last_dialog, is_run_out, list_files, run_out_question_part, \
         user_responses, list_answers_run_out, is_run_calendar_add, \
         array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
-        is_calendar_list_days_to_reserve, user_token
+        is_calendar_list_days_to_reserve, user_token, is_save_question, \
+        save_operation
     list_files_size = len(list_files)
     quote = ""
+    #
+    tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[0])) # noqa
+    # check if operation is save
+    save_operation = tmp_['operations_found']
+    if save_operation:
+        is_save_question = Operation().is_run_save(save_operation)
 
     # if index = 0, make a user_token
-    if index == 0:
+    if index == 0 and not user_token and user_token  != "": # noqa
         user_token = make_new_token()
-        #
-        tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[0])) # noqa
-        # check if operation is save
-        save_operation = tmp_['operations_found']
-        if Operation().is_run_save(save_operation):
-            save_params(save_operation, user_token, response_msg)
 
     # verify if the index is the last question
     if index == list_files_size - 1:
@@ -158,7 +160,7 @@ def step_response(incoming_msg: str) -> Any:
         is_words_question, list_files, is_global_question, is_save_question, \
         save_operation, language, is_map_location, is_run_calendar_add, \
         array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
-        user_token
+        array_operation_saving_params, user_token
     response_msg = incoming_msg.strip()
     current_file = list_files[current_step]
     quote = ""
@@ -168,9 +170,11 @@ def step_response(incoming_msg: str) -> Any:
         "file": change_filepath(current_file)
     })
 
-    if is_save_question:
+    if is_save_question and save_operation:
         save_params(save_operation, user_token, response_msg, IS_RESPONSE_ALPHA) # noqa
+        array_operation_saving_params[save_operation["param"]] = response_msg
         is_save_question = False
+        save_operation = None
     #
     is_map_location_tmp = False
     locations = []
@@ -197,9 +201,7 @@ def step_response(incoming_msg: str) -> Any:
         # create event
         Operation().run_calendar_add(
             user_token,
-            DEFAULT_TIMEZONE,
-            "toto summary",
-            "toto description",
+            array_operation_saving_params['name'],
             tmp_booking_day,
             tmp_booking_time[0].strip(),
             tmp_booking_time[1].strip()
@@ -280,7 +282,7 @@ def step_in_courtesy(response_msg: str) -> str:
         tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1])) # noqa
         # check if operation is save
         save_operation = tmp_['operations_found']
-        if is_save_question:
+        if save_operation:
             is_save_question = Operation().is_run_save(save_operation)
         #
         next_courtesy_content = tmp_['msg']
