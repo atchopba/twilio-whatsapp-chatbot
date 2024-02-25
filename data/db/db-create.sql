@@ -82,3 +82,17 @@ CREATE TABLE `user_activities` (
 	`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE KEY `cache_key_unique` (`id`)
 );
+
+#####
+# create tabe `user_calendar_events`
+DROP TABLE IF EXISTS `user_calendar_events`;
+CREATE TABLE `user_calendar_events` (
+	`id` INT AUTO_INCREMENT,
+	`token` VARCHAR(64) NOT NULL,
+  `person` VARCHAR(128) NULL,
+	`event_date` VARCHAR(128) DEFAULT NULL,
+	`start_time`TIME DEFAULT NULL,
+  `end_time` TIME DEFAULT NULL,
+	`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE KEY `cache_key_unique` (`id`)
+);

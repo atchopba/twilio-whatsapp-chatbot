@@ -3,7 +3,7 @@ from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
     check_phonenumber, check_str, check_email
 from twilio_whatsapp_bot.core.utilies.functions import geolocate_user, \
-    geolocate_place_from_user, get_list_days_to_reserve, calendar_create_event
+    geolocate_place_from_user, get_list_days_to_reserve
 from typing import Any
 
 
@@ -30,9 +30,6 @@ OP_CHECK_EMAIL = "check_email"
 OP_SELECT = "select"
 OP_CALENDAR_ADD = "calendar_add"
 OP_CALENDAR_LIST_DAYS_2_RESERVE = "calendar_list_days_2_reserve"
-OP_CALENDAR_LIST_USER = "calendar_list_user"
-OP_CALENDAR_LIST_ALL = "calendar_list_all"
-OP_CALENDAR_DELETE = "calendar_delete"
 
 OP_LIST = {
     OP_CHECK_CITY,
@@ -42,10 +39,7 @@ OP_LIST = {
     OP_CHECK_STR,
     OP_CHECK_EMAIL,
     OP_CALENDAR_ADD,
-    OP_CALENDAR_LIST_DAYS_2_RESERVE,
-    OP_CALENDAR_LIST_USER,
-    OP_CALENDAR_LIST_ALL,
-    OP_CALENDAR_DELETE
+    OP_CALENDAR_LIST_DAYS_2_RESERVE
 }
 
 IS_OP_SELECT = False
@@ -181,6 +175,7 @@ class Operation(object):
                 return_array.append(list_available_answers[i] + ". " + r[json_["column"]]) # noqa
                 return_proposal[list_available_answers[i]] = r[json_["column"]]
                 i += 1
+        #
         elif IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE:
             is_cldtr = IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
             IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
@@ -188,6 +183,7 @@ class Operation(object):
             for i in range(0, len(tmp_array)):
                 return_array.append(list_available_answers[i] + ". " + tmp_array[i]) # noqa
                 return_proposal[list_available_answers[i]] = tmp_array[i]
+        #
         return {
             "is_calendar_list_days_to_reserve": is_cldtr, # noqa
             "proposal": return_proposal,
@@ -242,15 +238,14 @@ class Operation(object):
                 break
         return current_question.replace(filename, str(filenumber) + ".txt")
 
-    def run_calendar_add(self, user_token: str, timeZone: str, summary: str,
-                         description: str, day_: str, start: str, end: str,
-                         color: str) -> Any:
-        if calendar_create_event(timeZone, summary, description, day_, start, end, color): # noqa
-            # insert into user_activities
-            sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', day_ + ' from ' + start + ' to ' + end) # noqa
-            DB().insert_without_datas(sql)
-            #
-            sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_payment', None) # noqa
-            DB().insert_without_datas(sql)
+    def run_calendar_add(self, user_token: str, person: str,
+                         event_date: str, start_time: str,
+                         end_time: str) -> Any:
+        # insert into user_activities
+        sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', event_date + ' from ' + start_time + ' to ' + end_time) # noqa
+        DB().insert_without_datas(sql)
+        # insert into user_calendar_events
+        sql = "INSERT INTO user_calendar_events (token, person, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, person, event_date, start_time, end_time) # noqa
+        DB().insert_without_datas(sql)
         #
         return

@@ -44,10 +44,11 @@ def remove_accents(msg: str) -> str:
     return unidecode(msg)
 
 
-def replace_words_in_content(file_content: str, regex_: str, words: str) -> str:
+def replace_words_in_content(file_content: str, regex_: str, words: str) -> str: # noqa
     regex_lower = regex_.lower()
     regex_upper = regex_.upper()
-    return file_content.replace(regex_lower, words).replace(regex_upper, words) # noqa
+    return_ = file_content.replace(regex_lower, words)
+    return return_.replace(regex_upper, words)
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
@@ -125,7 +126,7 @@ def check_email(email_adr: str) -> bool:
 def random_generator() -> str:
     import string
     import secrets
-    alphabet = string.ascii_letters + string.digits + "-_+$|()[]{}#@"
+    alphabet = string.ascii_letters + string.digits + "-_+$|()[]#@"
     password = ''.join(secrets.choice(alphabet) for i in range(32))
     return password
 
