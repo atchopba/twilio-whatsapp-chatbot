@@ -4,13 +4,14 @@ from twilio_whatsapp_bot.core.utilies.data import \
     clean_data_from_question_content, get_datas_in_bot_dialog
 from twilio_whatsapp_bot.core.utilies.operation import Operation
 from twilio_whatsapp_bot.core.utilies.functions import make_new_token, \
-    get_operations_in_bot_dialog
+    get_operations_in_bot_dialog, update_payment_data
 from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
     get_file_content, get_list_files, is_question_without_choice, \
     load_json_file, remove_accents, replace_words_in_content, \
-    available_answers, translate_msg, get_list_available_answer_run_out
+    available_answers, translate_msg, get_list_available_answer_run_out, \
+    is_part, get_payment_token
 from typing import Any
 
 
@@ -39,6 +40,8 @@ DEFAULT_COUNTRY = Config.DEFAULT_COUNTRY
 
 DEFAULT_MOMO_URL = Config.DEFAULT_MOMO_URL
 
+DEFAULT_PAYMENT_VALIDATED_STR = Config.DEFAULT_PAYMENT_VALIDATED_STR
+
 BUSINESS_NAME = Config.BUSINESS_NAME
 
 BUSINESS_GEOLOCATE_SENTENCE = Config.BUSINESS_GEOLOCATE_SENTENCE
@@ -54,6 +57,7 @@ user_responses = []
 list_files = get_list_files(PATHDIR_TO_DIALOG)
 is_last_dialog = False
 user_token = None
+payment_token = None
 
 previous_step_str = "courtesy"
 propose_all_questions_folder = ""
@@ -61,6 +65,9 @@ is_change_folder = False
 is_global_question = False
 is_words_question = False
 is_save_question = False
+is_external_link = False
+is_next_external_link = False
+next_step_for_external_link = None
 save_operation = None
 is_map_location = False
 map_user_geolocalisation = None
@@ -158,8 +165,23 @@ def step_response(incoming_msg: str) -> Any:
         is_words_question, list_files, is_global_question, is_save_question, \
         save_operation, language, is_map_location, is_run_calendar_add, \
         array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
-        array_operation_saving_params, user_token
+        array_operation_saving_params, user_token, payment_token, \
+        is_external_link, next_step_for_external_link, is_next_external_link
+    #
     response_msg = incoming_msg.strip()
+    # if the answer came after an external link
+    if is_external_link:
+        # if you are coming from payment
+        if is_part(response_msg, DEFAULT_PAYMENT_VALIDATED_STR):
+            payment_token = get_payment_token(response_msg)
+            # update the row in table user_payments
+            update_payment_data(user_token, payment_token)
+        #
+        current_step = next_step_for_external_link
+        is_external_link = False
+        is_next_external_link = True
+
+    #
     current_file = list_files[current_step]
     quote = ""
     media_list = []
@@ -168,6 +190,7 @@ def step_response(incoming_msg: str) -> Any:
         "file": change_filepath(current_file)
     })
 
+    # if the question needing answer required saving
     if is_save_question and save_operation:
         save_params(save_operation, user_token, response_msg, IS_RESPONSE_ALPHA) # noqa
         array_operation_saving_params[save_operation["param"]] = response_msg
@@ -176,7 +199,8 @@ def step_response(incoming_msg: str) -> Any:
     #
     is_map_location_tmp = False
     locations = []
-    #
+
+    # if the question needing a location
     if is_map_location:
         locations = Operation().run_map(
             user_token,
@@ -242,6 +266,11 @@ def step_response(incoming_msg: str) -> Any:
         else:
             quote = BAD_ANSWER_CHOICE_STR + "\n\n"
             quote += propose_all_questions_folder
+
+    # check if the question has an external link
+    if is_part(quote, "{MOMO_URL}"):
+        is_external_link = True
+        next_step_for_external_link = current_step + 1
     #
     quote = replace_words_in_content(quote, "{ASSISTANT}", DIALOG_ASSISTANT)
     quote = replace_words_in_content(quote, "{MOMO_URL}", DEFAULT_MOMO_URL)
@@ -254,7 +283,7 @@ def step_response(incoming_msg: str) -> Any:
     if is_map_location_tmp:
         is_map_location = False
         tokens_msg = [quote_tmp] + tokens_msg
-
+    #
     return {
         "tokens": tokens_msg,
         "is_in_2_msg": check_content_msg["is_in_2_msg"],
@@ -335,7 +364,8 @@ def step_in_courtesy(response_msg: str) -> str:
 
 def step_in_question(response_msg: str) -> str:
     global current_step, is_words_question, is_run_out, \
-        run_out_question_part, is_map_location, list_answers_run_out
+        run_out_question_part, is_map_location, list_answers_run_out, \
+        is_next_external_link
     quote = ""
     current_file = list_files[current_step]
     current_file_content = get_file_content(current_file)
@@ -383,6 +413,10 @@ def step_in_question(response_msg: str) -> str:
             quote = BAD_ANSWER_STR + "\n\n" + current_file_content
         elif is_words_question:
             is_words_question = False
+            current_step = current_step
+            quote = current_file_content
+        elif is_next_external_link:
+            is_next_external_link = False
             current_step = current_step
             quote = current_file_content
         else:
