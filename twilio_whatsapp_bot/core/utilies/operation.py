@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import requests
 from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
     check_phonenumber, check_str, check_email
@@ -193,7 +194,7 @@ class Operation(object):
     def run_save(self, json_: Any, user_token: str, response_msg) -> Any:
         self.parse(json_)
         #
-        sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, json_["param"], response_msg) # noqa
+        sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, json_["param"], response_msg) # noqa
         DB().insert_without_datas(sql)
         #
         return {
@@ -218,7 +219,7 @@ class Operation(object):
                 location["lng"]
             )
             # insert into user_activities
-            sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'geolocate', response_msg) # noqa
+            sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'geolocate', response_msg) # noqa
             DB().insert_without_datas(sql)
         #
         return around_user
@@ -242,10 +243,10 @@ class Operation(object):
                          event_date: str, start_time: str,
                          end_time: str) -> Any:
         # insert into user_activities
-        sql = "INSERT INTO user_activities (token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', event_date + ' from ' + start_time + ' to ' + end_time) # noqa
+        sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', event_date + ' from ' + start_time + ' to ' + end_time) # noqa
         DB().insert_without_datas(sql)
         # insert into user_calendar_events
-        sql = "INSERT INTO user_calendar_events (token, person, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, person, event_date, start_time, end_time) # noqa
+        sql = "INSERT INTO user_calendar_events (user_token, person, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, person, event_date, start_time, end_time) # noqa
         DB().insert_without_datas(sql)
         #
         return
