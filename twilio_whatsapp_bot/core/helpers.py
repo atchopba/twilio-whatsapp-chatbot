@@ -126,10 +126,9 @@ def check_email(email_adr: str) -> bool:
 def random_generator() -> str:
     import string
     import secrets
-    alphabet = string.ascii_letters + string.digits + "-_+$|()[]#@"
+    alphabet = string.ascii_letters + string.digits + "-_+$()#@"
     password = ''.join(secrets.choice(alphabet) for i in range(32))
     return password
-
 
 
 def translate_msg(tokens: Any, from_lang: str, to_lang: str) -> Any:
