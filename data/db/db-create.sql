@@ -65,7 +65,7 @@ INSERT INTO `time_slots` (`begin_time`, `end_time`) VALUES ('11:45', '12:00');
 DROP TABLE IF EXISTS `user_sessions`;
 CREATE TABLE `user_sessions` (
 	`id` INT AUTO_INCREMENT,
-	`token` VARCHAR(64) NOT NULL UNIQUE,
+	`user_token` VARCHAR(64) NOT NULL UNIQUE,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE KEY `cache_key_unique` (`id`)
 );
@@ -75,7 +75,7 @@ CREATE TABLE `user_sessions` (
 DROP TABLE IF EXISTS `user_activities`;
 CREATE TABLE `user_activities` (
 	`id` INT AUTO_INCREMENT,
-	`token` VARCHAR(64) NOT NULL UNIQUE,
+	`user_token` VARCHAR(64) NOT NULL UNIQUE,
 	`action_param` VARCHAR(64) NOT NULL,
 	`action_value_1` VARCHAR(128) DEFAULT NULL,
 	`action_value_2` VARCHAR(128) DEFAULT NULL,
@@ -88,11 +88,26 @@ CREATE TABLE `user_activities` (
 DROP TABLE IF EXISTS `user_calendar_events`;
 CREATE TABLE `user_calendar_events` (
 	`id` INT AUTO_INCREMENT,
-	`token` VARCHAR(64) NOT NULL,
+	`user_token` VARCHAR(64) NOT NULL,
   `person` VARCHAR(128) NULL,
 	`event_date` VARCHAR(128) DEFAULT NULL,
 	`start_time`TIME DEFAULT NULL,
   `end_time` TIME DEFAULT NULL,
 	`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE KEY `cache_key_unique` (`id`)
+);
+
+#####
+# create table `user_payments`
+DROP TABLE IF EXISTS `user_payments`;
+CREATE TABLE `user_payments` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_token` VARCHAR(64) NOT NULL,
+  `payment_token` VARCHAR(32) NOT NULL,
+  `person` VARCHAR(128) DEFAULT NULL,
+  `amount` NUMERIC(9,2) DEFAULT 0.0,
+  `is_confirmed` BOOLEAN DEFAULT  FALSE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	UNIQUE KEY `cache_key_unique` (`id`)
 );

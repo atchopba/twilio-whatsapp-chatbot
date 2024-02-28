@@ -37,6 +37,8 @@ class Config:
 
     DEFAULT_MOMO_URL = environ.get("DEFAULT_MOMO_URL")
 
+    DEFAULT_PAYMENT_VALIDATED_STR = environ.get("DEFAULT_PAYMENT_VALIDATED_STR")
+
     WORK_ON_SATURDAY = environ.get("WORK_ON_SATURDAY")
 
     WORK_ON_SUNDAY = environ.get("WORK_ON_SUNDAY")

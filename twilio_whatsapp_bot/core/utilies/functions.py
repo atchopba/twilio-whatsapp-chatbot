@@ -5,6 +5,7 @@ import re
 import requests
 import datetime
 from twilio_whatsapp_bot.core.db.db import DB
+from twilio_whatsapp_bot.core.db.user_payments import UserPayments
 from twilio_whatsapp_bot.core.helpers import random_generator
 from typing import Any
 
@@ -108,12 +109,27 @@ def get_list_days_to_reserve(lang: str) -> Any:
 
 
 def make_new_token() -> str:
-    token_lst = DB().select("select token from user_sessions")
+    token_lst = DB().select("select user_token from user_sessions")
     term_ = random_generator()
     while term_ in token_lst:
         term_ = random_generator()
     # insert into user_sessions
-    sql = "INSERT INTO user_sessions (token) VALUES ('{0}')".format(term_)
+    sql = "INSERT INTO user_sessions (user_token) VALUES ('{0}')".format(term_)
     DB().insert_without_datas(sql)
     #
     return term_
+
+
+def update_payment_data(user_token, payment_token):
+    if UserPayments().select_data(user_token, payment_token):
+        UserPayments().update_data(user_token, payment_token)
+        sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'update_payment', 'payment validated') # noqa
+        DB().insert_without_datas(sql) # noqa
+        return {
+            'status': 'OK',
+            'message': 'La transaction a été  mise à jour'
+        }
+    return {
+        'status': 'NOK',
+        'message': 'Le jeton nous semble erroné'
+    }
