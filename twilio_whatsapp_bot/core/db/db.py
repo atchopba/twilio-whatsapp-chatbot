@@ -49,13 +49,13 @@ class DB(object):
         except Exception as e:
             print(e)
 
-    def select(self, r, select_one: bool = False) -> Any:
+    def select(self, sql, select_one: bool = False) -> Any:
         '''
         Select data into a table
 
         Parameters
         ----------
-        r : String
+        sql : String
             Request to execute.
         select_one : Boolean, optional
             Specify if select one row data or many. The default is False.
@@ -71,7 +71,7 @@ class DB(object):
         result = []
         try:
             with self.connection.cursor() as cursor:
-                cursor.execute(r)
+                cursor.execute(sql)
                 result = cursor.fetchall() if (
                     select_one is False) else [cursor.fetchone()]
         except Exception as e:
@@ -140,3 +140,34 @@ class DB(object):
             print("Erreur lors de l'execution : ", exception)
         self.deconnect()
         return return_
+
+    def execute_query(self, sql: str, select_one=False) -> ResultSelectQuery:
+        '''
+        Select data into a table
+
+        Parameters
+        ----------
+        sql : String
+            Request to execute.
+        select_one : Boolean, optional
+            Specify if select one row data or many. The default is False.
+
+        Returns
+        -------
+        Array
+            Row data.
+
+        '''
+        self.connect()
+        error_msg = ''
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(sql)
+                result = cursor.fetchall() if select_one is False else [cursor.fetchone()] # noqa
+        except Exception as e:
+            error_msg = 'Erreur lors de l\'execution : {}'.format(e)
+        self.deconnect()
+        return ResultSelectQuery(result, error_msg)
+
+    def escape_string(self, sattr_: str) -> str:
+        return self.connection.escape_string(sattr_)

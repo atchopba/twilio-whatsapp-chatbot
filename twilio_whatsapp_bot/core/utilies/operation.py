@@ -1,10 +1,11 @@
 #!/usr/bin/python
 import requests
 from twilio_whatsapp_bot.core.db.db import DB
+from twilio_whatsapp_bot.core.db.user_activities import UserActivities
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
     check_phonenumber, check_str, check_email
 from twilio_whatsapp_bot.core.utilies.functions import geolocate_user, \
-    geolocate_place_from_user, get_list_days_to_reserve
+    geolocate_place_from_user, get_list_days_to_reserve, generate_token
 from typing import Any
 
 
@@ -28,6 +29,7 @@ OP_CHECK_NUMBER = "check_number"
 OP_CHECK_PHONENUMBER = "check_phonenumber"
 OP_CHECK_CITY = "check_city"
 OP_CHECK_EMAIL = "check_email"
+OP_GENERATE_QRCODE = "generate_qrcode"
 OP_SELECT = "select"
 OP_CALENDAR_ADD = "calendar_add"
 OP_CALENDAR_LIST_DAYS_2_RESERVE = "calendar_list_days_2_reserve"
@@ -45,6 +47,7 @@ OP_LIST = {
 
 IS_OP_SELECT = False
 IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
+IS_OP_GENERATE_QRCODE = False
 
 
 class Operation(object):
@@ -61,7 +64,7 @@ class Operation(object):
     @raise Exception
     '''
     def parse(self, json_) -> None:
-        global IS_OP_SELECT, IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
+        global IS_OP_SELECT, IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE, IS_OP_GENERATE_QRCODE # noqa
         self.type_ = json_["type"] if "type" in json_ else ""
         self.op_ = json_["op"] if "op" in json_ else ""
         self.column_ = json_["column"] if "column" in json_ else ""
@@ -70,6 +73,9 @@ class Operation(object):
         msg_1 = "is an unknown operation. Notify the system administrator"
         msg_2 = '''is an unknow operation type. Please notify the system
         administrator'''
+        IS_OP_SELECT = False
+        IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
+        IS_OP_GENERATE_QRCODE = False
         if (self.type_ is not None
                 and self.type_ in OP_TYPE_LIST
                 and self.op_ is not None):
@@ -79,9 +85,12 @@ class Operation(object):
                     IS_OP_SELECT = True
                 elif self.op_ == OP_CALENDAR_LIST_DAYS_2_RESERVE:
                     IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = True
+                elif self.op_ == OP_GENERATE_QRCODE:
+                    IS_OP_GENERATE_QRCODE = True
                 else:
                     IS_OP_SELECT = False
                     IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
+                    IS_OP_GENERATE_QRCODE = False
             #
             elif self.type_ == OP_TYPE_IN and self.op_ in OP_LIST:
                 pass
@@ -110,14 +119,14 @@ class Operation(object):
         if self.type_ == OP_TYPE_IN:
             return_ = self.run_in(json_, msg_2_check)
         elif self.type_ == OP_TYPE_OUT:
-            return_ = self.run_out(json_)
+            return_ = self.run_out(None, json_)
         elif self.type_ == OP_TYPE_SAVE:
             return_ = self.run_save(json_)
         #
         return return_
 
     def is_empty(self, json_: Any) -> bool:
-        return "op" not in json_
+        return (json_ is None or len(json_) == 0) or (json_ and "op" not in json_) # noqa
 
     def is_run_in(self, json_: Any) -> bool:
         return (not self.is_empty(json_) and "type" in json_ and
@@ -161,12 +170,13 @@ class Operation(object):
         #
         return return_
 
-    def run_out(self, json_: Any, list_available_answers: Any) -> Any:
-        global IS_OP_SELECT, IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
+    def run_out(self, user_token: str, json_: Any, list_available_answers: Any) -> Any:
+        global IS_OP_SELECT, IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE, IS_OP_GENERATE_QRCODE # noqa
         self.parse(json_)
         operation = json_["op"]
         return_proposal = {}
         return_array = []
+        url_qrcode = None
         is_cldtr = False
         # if operation select in DB
         if IS_OP_SELECT:
@@ -185,17 +195,22 @@ class Operation(object):
                 return_array.append(list_available_answers[i] + ". " + tmp_array[i]) # noqa
                 return_proposal[list_available_answers[i]] = tmp_array[i]
         #
+        elif IS_OP_GENERATE_QRCODE:
+            # call generate_qrcode method from helpers
+            url_qrcode = generate_token(user_token)
+            IS_OP_GENERATE_QRCODE = False
+        #
         return {
             "is_calendar_list_days_to_reserve": is_cldtr, # noqa
             "proposal": return_proposal,
-            "array": return_array
+            "array": return_array,
+            "url_qrcode": url_qrcode
         }
 
     def run_save(self, json_: Any, user_token: str, response_msg) -> Any:
         self.parse(json_)
         #
-        sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, json_["param"], response_msg) # noqa
-        DB().insert_without_datas(sql)
+        UserActivities().insert_data(user_token, json_["param"], response_msg)
         #
         return {
             "param": json_["param"]
@@ -219,8 +234,7 @@ class Operation(object):
                 location["lng"]
             )
             # insert into user_activities
-            sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'geolocate', response_msg) # noqa
-            DB().insert_without_datas(sql)
+            UserActivities().insert_data(user_token, 'geolocate', response_msg)
         #
         return around_user
 
@@ -243,8 +257,7 @@ class Operation(object):
                          event_date: str, start_time: str,
                          end_time: str) -> Any:
         # insert into user_activities
-        sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'calendar_add_event', event_date + ' from ' + start_time + ' to ' + end_time) # noqa
-        DB().insert_without_datas(sql)
+        UserActivities().insert_data(user_token, 'calendar_add_event', event_date + ' from ' + start_time + ' to ' + end_time) # noqa
         # insert into user_calendar_events
         sql = "INSERT INTO user_calendar_events (user_token, person, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, person, event_date, start_time, end_time) # noqa
         DB().insert_without_datas(sql)
