@@ -1,0 +1,3 @@
+Votre numéro de téléphone, s'il vous plait:
+{"type": "out", "op": "generate_qrcode"}
+{"type": "in", "op":"check_phonenumber"}

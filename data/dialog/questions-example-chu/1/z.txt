@@ -1,0 +1,2 @@
+Votre rendez-vous a été enregistré. Veuillez vous munir de ce QR-code généré lors de votre rendez-vous. A très bientôt
+{"data": "file", "type": "image/png", "url": "{URL_QRCODE}"}

@@ -1,0 +1,9 @@
+Pour quelle spécialité souhaitez-vous avoir un rendez-vous?
+1. chirurgie
+2. médecine générale
+3. gynécologie
+4. pédiatrie
+5. traumatologie
+6. ORL
+7. ophtalmologie
+8. kinésithérapie

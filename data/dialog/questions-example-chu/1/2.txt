@@ -1,0 +1,2 @@
+Quel jour souhaitez-vous pour votre rendez-vous?
+{"type": "out", "op": "calendar_list_days_2_reserve"}

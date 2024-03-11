@@ -1,0 +1,3 @@
+Veuillez regler pour votre prise en charge en urgence.
+{"type": "out", "op": "generate_qrcode"}
+{MOMO_URL}
