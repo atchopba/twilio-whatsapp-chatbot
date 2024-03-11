@@ -1,10 +1,12 @@
 #!/usr/bin/python
 from config import Config
 import json
+import qrcode
 import re
 import requests
 import datetime
 from twilio_whatsapp_bot.core.db.db import DB
+from twilio_whatsapp_bot.core.db.user_activities import UserActivities
 from twilio_whatsapp_bot.core.db.user_payments import UserPayments
 from twilio_whatsapp_bot.core.helpers import random_generator
 from typing import Any
@@ -17,6 +19,9 @@ PATTERN_OPERATION = r"^\{\"type\"\:\s*\".*?\"(,\s*\".*?\"\:\s*((\".*?\")|(\{\".*
 WORK_ON_SATURDAY = True if Config.WORK_ON_SATURDAY.lower() == "true" else False # noqa
 WORK_ON_SUNDAY = True if Config.WORK_ON_SUNDAY.lower() == "true" else False # noqa
 
+PATH_QRCODE = Config.PATH_QRCODE
+URL_QRCODE = Config.URL_QRCODE
+
 
 def clean_operations_from_question_content(msg: str) -> str:
     tmp_ = re.sub(PATTERN_OPERATION, "", msg, 0, re.MULTILINE)
@@ -24,14 +29,12 @@ def clean_operations_from_question_content(msg: str) -> str:
 
 
 def get_operations_in_bot_dialog(bot_dialog: str) -> Any:
-    operations_found = ""
+    operations_found = []
     tmp_bot_dialog = bot_dialog.lower()
     for match in re.finditer(PATTERN_OPERATION, tmp_bot_dialog, re.MULTILINE):
-        operations_found = match.group()
-        break
+        operations_found.append(json.loads(match.group()))
     return {
-        'operations_found': json.loads(operations_found) if (
-            operations_found != "") else "",
+        'operations_found': operations_found,
         'msg': clean_operations_from_question_content(bot_dialog)
     }
 
@@ -123,8 +126,7 @@ def make_new_token() -> str:
 def update_payment_data(user_token, payment_token):
     if UserPayments().select_data(user_token, payment_token):
         UserPayments().update_data(user_token, payment_token)
-        sql = "INSERT INTO user_activities (user_token, action_param, action_value_1) VALUES ('{0}', '{1}', '{2}')".format(user_token, 'update_payment', 'payment validated') # noqa
-        DB().insert_without_datas(sql) # noqa
+        UserActivities().insert_data(user_token, 'update_payment', 'payment validated') # noqa
         return {
             'status': 'OK',
             'message': 'La transaction a été  mise à jour'
@@ -133,3 +135,28 @@ def update_payment_data(user_token, payment_token):
         'status': 'NOK',
         'message': 'Le jeton nous semble erroné'
     }
+
+
+def get_operations_by_type(array_operations: Any, type_: str) -> Any:
+    for operation in array_operations:
+        if 'type' in operation and operation['type'] == type_:
+            return operation
+    return None
+
+
+def generate_token(user_token):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    # select data in user_activities
+    user_activities_data = UserActivities().get_by_user_token(user_token)
+    # and add data in the QR-code
+    for activity in user_activities_data:
+        qr.add_data(activity + '\n')
+    # generate and save image on a web server
+    img = qr.make_image(fill_color='black', back_color='white')
+    img.save(PATH_QRCODE + '/' + str(user_token) + '.png')
+    return URL_QRCODE + '/' + str(user_token) + '.png'
