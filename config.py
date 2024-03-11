@@ -31,6 +31,8 @@ class Config:
 
     DEFAULT_MAPS_LOCATION_ERROR = environ.get("DEFAULT_MAPS_LOCATION_ERROR")
 
+    DEFAULT_MAPS_NO_RESULT = environ.get("DEFAULT_MAPS_NO_RESULT")
+
     BUSINESS_NAME = environ.get("BUSINESS_NAME")
 
     DEFAULT_COUNTRY = environ.get("DEFAULT_COUNTRY")
@@ -46,3 +48,7 @@ class Config:
     BUSINESS_GEOLOCATE_SENTENCE = environ.get("BUSINESS_GEOLOCATE_SENTENCE")
 
     IS_RESPONSE_ALPHA = environ.get("IS_RESPONSE_ALPHA")
+
+    PATH_QRCODE = environ.get("PATH_QRCODE")
+
+    URL_QRCODE = environ.get('URL_QRCODE')
