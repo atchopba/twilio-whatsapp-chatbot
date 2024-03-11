@@ -9,7 +9,7 @@ class Answers(DB):
     def __init__(self):
         pass
 
-    def insert_data(self, datas: Any) -> int:
+    def insert_data(self, datas: Any) -> Any:
         insert_params = []
         insert_values = []
         i = 0
@@ -20,7 +20,6 @@ class Answers(DB):
 
         sql = "INSERT INTO answers (" + ",".join(insert_params) + ") "
         sql += "VALUES (" + ",".join(insert_values) + ")"
-
         try:
             self.connect()
             with self.connection.cursor() as cursor:
