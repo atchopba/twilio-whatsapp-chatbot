@@ -4,7 +4,7 @@ from twilio_whatsapp_bot.core.utilies.data import \
     clean_data_from_question_content, get_datas_in_bot_dialog
 from twilio_whatsapp_bot.core.utilies.operation import Operation
 from twilio_whatsapp_bot.core.utilies.functions import make_new_token, \
-    get_operations_in_bot_dialog, update_payment_data
+    get_operations_in_bot_dialog, update_payment_data, get_operations_by_type
 from twilio_whatsapp_bot.core.utilies.folder import Folder
 from twilio_whatsapp_bot.core.helpers import change_filepath, \
     check_content_is_2_msg, check_folder_exists, count_nb_folders, \
@@ -35,6 +35,8 @@ PATHDIR_TO_QUESTIONS = PATHDIR_TO_DIALOG + "//questions"
 GOOGLE_MAPS_API_KEY = Config.GOOGLE_MAPS_API_KEY
 
 DEFAULT_MAPS_LOCATION_ERROR = Config.DEFAULT_MAPS_LOCATION_ERROR
+
+DEFAULT_MAPS_NO_RESULT = Config.DEFAULT_MAPS_NO_RESULT
 
 DEFAULT_COUNTRY = Config.DEFAULT_COUNTRY
 
@@ -82,6 +84,7 @@ array_operation_saving_params = {}
 current_step = 0
 language = LANG_FR
 list_answers_run_out = []
+url_qrcode = None
 
 # If you have only 1 question directory for dialogue, please keep only 1 file
 # in the courtesy directory for the proper functioning of the chatbot
@@ -95,13 +98,13 @@ def step_question(index: int, response_msg: str = "") -> str:
         user_responses, list_answers_run_out, is_run_calendar_add, \
         array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
         is_calendar_list_days_to_reserve, user_token, is_save_question, \
-        save_operation
+        save_operation, url_qrcode
     list_files_size = len(list_files)
     quote = ""
     #
     tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[0])) # noqa
     # check if operation is save
-    save_operation = tmp_['operations_found']
+    save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
     if save_operation:
         is_save_question = Operation().is_run_save(save_operation)
 
@@ -139,17 +142,20 @@ def step_question(index: int, response_msg: str = "") -> str:
         tmp_ = get_operations_in_bot_dialog(get_file_content(current_file))
         quote = tmp_["msg"]
         #
-        if ("operations_found" in tmp_
-            and tmp_["operations_found"] is not None
-                and Operation().is_run_out(tmp_["operations_found"])):
-            run_out_list = Operation().run_out(tmp_["operations_found"], LIST_AVAILABLE_ANSWERS_RUN_OUT) # noqa
+        operation_out = get_operations_by_type(tmp_["operations_found"], 'out')
+        if (operation_out is not None
+                and Operation().is_run_out(operation_out)):
+            run_out_list = Operation().run_out(user_token, operation_out, LIST_AVAILABLE_ANSWERS_RUN_OUT) # noqa
             #
+            if 'url_qrcode' in run_out_list and run_out_list['url_qrcode'] is not None and run_out_list['url_qrcode'] != "": # noqa
+                # url_qrcode = run_out_list['url_qrcode']
+                url_qrcode = "https://thierryo.github.io/qrcode/reference/figures/example-1.png" # noqa
             is_run_out = True
             run_out_question_part = "\n" + "\n".join(run_out_list["array"]) # noqa
             quote += run_out_question_part
             list_answers_run_out = available_answers(quote)
             #
-            if (Operation().is_run_calendar_add(tmp_["operations_found"])):
+            if (Operation().is_run_calendar_add(operation_out)):
                 array_run_calendar_times_proposal = run_out_list["proposal"]
                 is_run_calendar_add = True
                 is_run_out = False
@@ -166,7 +172,8 @@ def step_response(incoming_msg: str) -> Any:
         save_operation, language, is_map_location, is_run_calendar_add, \
         array_run_calendar_days_proposal, array_run_calendar_times_proposal, \
         array_operation_saving_params, user_token, payment_token, \
-        is_external_link, next_step_for_external_link, is_next_external_link
+        is_external_link, next_step_for_external_link, is_next_external_link, \
+        url_qrcode
     #
     response_msg = incoming_msg.strip()
     # if the answer came after an external link
@@ -199,7 +206,6 @@ def step_response(incoming_msg: str) -> Any:
     #
     is_map_location_tmp = False
     locations = []
-
     # if the question needing a location
     if is_map_location:
         locations = Operation().run_map(
@@ -211,6 +217,8 @@ def step_response(incoming_msg: str) -> Any:
         )
         if locations is None:
             quote_tmp = DEFAULT_MAPS_LOCATION_ERROR
+        elif len(locations) == 0:
+            quote_tmp = DEFAULT_MAPS_NO_RESULT
         else:
             quote_tmp = BUSINESS_GEOLOCATE_SENTENCE + "\n" + "\n".join(locations) # noqa
         is_map_location_tmp = True
@@ -237,6 +245,7 @@ def step_response(incoming_msg: str) -> Any:
         and not is_unique_question_folder
     ):
         quote = step_in_courtesy(response_msg)
+        quote = insert_qrcode(quote, url_qrcode)
         #
         media_list = get_datas_in_bot_dialog(quote)
         quote = clean_data_from_question_content(quote)
@@ -247,6 +256,7 @@ def step_response(incoming_msg: str) -> Any:
             or is_unique_question_folder
     ):
         quote = step_in_question(response_msg)
+        quote = insert_qrcode(quote, url_qrcode)
         #
         media_list = get_datas_in_bot_dialog(quote)
         quote = clean_data_from_question_content(quote)
@@ -301,14 +311,14 @@ def step_in_courtesy(response_msg: str) -> str:
     global current_step, list_files, is_change_folder, is_global_question, \
         is_unique_question_folder, is_words_question, nb_folder_question, \
         propose_all_questions_folder, is_save_question, save_operation, \
-        user_token
+        user_token, next_step_for_external_link
 
     next_file = ""
 
     if not is_words_question or is_unique_question_folder:
         tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1])) # noqa
         # check if operation is save
-        save_operation = tmp_['operations_found']
+        save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
         if save_operation:
             is_save_question = Operation().is_run_save(save_operation)
         #
@@ -317,7 +327,7 @@ def step_in_courtesy(response_msg: str) -> str:
         # check if the content contains {} to replace with the response
         if ("{}" in next_courtesy_content):
             next_courtesy_content = next_courtesy_content.replace(
-                "{}", response_msg
+                "{}", response_msg.title()
             )
         current_step += 1
 
@@ -342,7 +352,7 @@ def step_in_courtesy(response_msg: str) -> str:
             is_words_question = False
             #
             tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step])) # noqa
-            save_operation = tmp_['operations_found']
+            save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
             is_save_question = Operation().is_run_save(save_operation)
             next_courtesy_content = tmp_['msg']
         #
@@ -376,25 +386,36 @@ def step_in_question(response_msg: str) -> str:
 
     # check if the operation is map location
     tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
-    is_map_location = Operation().is_run_map(tmp_2["operations_found"])
+    is_map_location = Operation().is_run_map(get_operations_by_type(tmp_2["operations_found"], 'map')) # noqa
+    is_run_map = get_operations_by_type(operations, 'map')
+
     list_response_msg = [response_msg.lower(), response_msg.upper()]
     # get nb of line of the current file
     nb_lines = len(current_file_content.split("\n"))
 
     # if file is on 1 line, get the answer and next question
     if nb_lines == 1 or is_question_without_choice(current_file_content):
-        if (operations != "" and operations is not None
-                and Operation().is_run_in(operations)
-                and not check_msg_validity(response_msg, operations)):
-            current_step = current_step
-            quote = BAD_ANSWER_STR + "\n\n" + current_file_content
-        elif (operations != "" and operations is not None
-              and Operation().is_run_out(operations)
-              and not (any(x in list_response_msg for x in list_answers_run_out))): # noqa
-            current_step = current_step
-            quote = BAD_ANSWER_STR + "\n\n" + current_file_content
-            quote += run_out_question_part
-        else:
+        is_contain_op_in = False
+        is_contain_op_out = False
+        if (operations != "" and operations is not None):
+            operation_in = get_operations_by_type(operations, 'in')
+            operation_out = get_operations_by_type(operations, 'out')
+            #
+            if Operation().is_run_in(operation_in):
+                if not check_msg_validity(response_msg, operation_in):
+                    current_step = current_step
+                    quote = BAD_ANSWER_STR + "\n\n" + current_file_content
+                    is_contain_op_in = True
+                else:
+                    pass
+            elif (not is_contain_op_in and Operation().is_run_out(operation_out) # noqa
+                    and not (any(x in list_response_msg for x in list_answers_run_out))): # noqa
+                current_step = current_step
+                quote = BAD_ANSWER_STR + "\n\n" + current_file_content
+                quote += run_out_question_part
+                is_contain_op_out = True
+
+        if not is_contain_op_in and not is_contain_op_out:
             quote = step_question(current_step + 1, response_msg)
     # nb line > 1, many possibilities of responses
     else:
@@ -406,6 +427,9 @@ def step_in_question(response_msg: str) -> str:
             quote = step_question(current_step + 1, response_msg)
         elif response_msg in available_answers(current_file_content):
             quote = step_question(current_step + 1, response_msg)
+        elif is_run_map:
+            quote = step_question(current_step + 1, response_msg)
+            is_run_map = False
         elif (operations != "" and operations is not None
               and Operation().is_run_in(operations)
               and not check_msg_validity(response_msg, operations)):
@@ -417,7 +441,7 @@ def step_in_question(response_msg: str) -> str:
             quote = current_file_content
         elif is_next_external_link:
             is_next_external_link = False
-            current_step = current_step
+            current_step = next_step_for_external_link
             quote = current_file_content
         else:
             current_step = current_step
@@ -440,3 +464,9 @@ def save_params(operation: Any, user_token: str, response_msg: str, is_response_
             (not is_response_alpha and response_msg == "2")
             or (is_response_alpha and response_msg.lower() == "b")
         ) else LANG_FR
+
+
+def insert_qrcode(quote: str, url_qrcode: str) -> None:
+    if is_part(quote, "{URL_QRCODE}"):
+        quote = replace_words_in_content(quote, "{URL_QRCODE}", url_qrcode)
+    return quote
