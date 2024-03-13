@@ -76,9 +76,9 @@ DROP TABLE IF EXISTS `user_activities`;
 CREATE TABLE `user_activities` (
 	`id` INT AUTO_INCREMENT,
 	`user_token` VARCHAR(64) NOT NULL UNIQUE,
-	`action_param` VARCHAR(64) NOT NULL,
-	`action_value_1` VARCHAR(128) DEFAULT NULL,
-	`action_value_2` VARCHAR(128) DEFAULT NULL,
+	`action_param` VARCHAR(255) NOT NULL,
+	`action_value_1` VARCHAR(255) DEFAULT NULL,
+	`action_value_2` VARCHAR(255) DEFAULT NULL,
 	`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE KEY `cache_key_unique` (`id`)
 );
@@ -90,7 +90,7 @@ CREATE TABLE `user_calendar_events` (
 	`id` INT AUTO_INCREMENT,
 	`user_token` VARCHAR(64) NOT NULL,
   `person` VARCHAR(128) NULL,
-	`event_date` VARCHAR(128) DEFAULT NULL,
+	`event_date` VARCHAR(256) DEFAULT NULL,
 	`start_time`TIME DEFAULT NULL,
   `end_time` TIME DEFAULT NULL,
 	`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
