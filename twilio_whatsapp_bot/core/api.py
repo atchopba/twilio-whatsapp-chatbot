@@ -13,6 +13,7 @@ from twilio_whatsapp_bot.core.helpers import change_filepath, \
     available_answers, translate_msg, get_list_available_answer_run_out, \
     is_part, get_payment_token
 from typing import Any
+import logging
 
 
 LANG_FR = "fr"
@@ -385,8 +386,12 @@ def step_in_question(response_msg: str) -> str:
     current_file_content = tmp_['msg']
 
     # check if the operation is map location
-    tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
-    is_map_location = Operation().is_run_map(get_operations_by_type(tmp_2["operations_found"], 'map')) # noqa
+    try:
+        tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
+        is_map_location = Operation().is_run_map(get_operations_by_type(tmp_2["operations_found"], 'map')) # noqa
+    except IndexError:
+        is_map_location = False
+
     is_run_map = get_operations_by_type(operations, 'map')
 
     list_response_msg = [response_msg.lower(), response_msg.upper()]
