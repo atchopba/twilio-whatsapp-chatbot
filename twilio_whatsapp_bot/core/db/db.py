@@ -3,8 +3,8 @@
 from typing import Any
 import pymysql.cursors
 from collections import namedtuple
-
 from config import Config
+from twilio_whatsapp_bot.core.helpers import get_logger
 
 ResultSelectQuery = namedtuple("ResultSelectQuery", "result error_msg")
 
@@ -76,7 +76,7 @@ class DB(object):
                     select_one is False) else [cursor.fetchone()]
         except Exception as e:
             error_msg = "Erreur lors de l'execution : ", e
-            print(error_msg)
+            get_logger().exception(error_msg)
         self.deconnect()
         return result
 
@@ -108,7 +108,7 @@ class DB(object):
                 self.connection.commit()
                 return_ = cursor.rowcount
         except Exception as exception:
-            print("Erreur lors de l'execution : ", exception)
+            get_logger().exception("Erreur lors de l'execution : ", exception)
         self.deconnect()
         return return_
 
@@ -137,7 +137,7 @@ class DB(object):
                 self.connection.commit()
                 return_ = cursor.rowcount
         except Exception as exception:
-            print("Erreur lors de l'execution : ", exception)
+            get_logger().exception("Erreur lors de l'execution : ", exception)
         self.deconnect()
         return return_
 
@@ -165,7 +165,7 @@ class DB(object):
                 cursor.execute(sql)
                 result = cursor.fetchall() if select_one is False else [cursor.fetchone()] # noqa
         except Exception as e:
-            error_msg = 'Erreur lors de l\'execution : {}'.format(e)
+            get_logger().exception('Erreur lors de l\'execution : {}'.format(e))
         self.deconnect()
         return ResultSelectQuery(result, error_msg)
 
