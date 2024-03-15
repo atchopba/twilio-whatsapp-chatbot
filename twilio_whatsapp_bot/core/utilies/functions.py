@@ -124,7 +124,7 @@ def make_new_token() -> str:
 
 
 def update_payment_data(user_token, payment_token):
-    if UserPayments().select_data(user_token, payment_token):
+    if UserPayments().is_data_exists(user_token, payment_token):
         UserPayments().update_data(user_token, payment_token)
         UserActivities().insert_data(user_token, 'update_payment with payment_token: ' + payment_token, 'payment validated') # noqa
         return {
