@@ -1,9 +1,8 @@
 #!/usr/bin/python
-import requests
 from twilio_whatsapp_bot.core.db.db import DB
 from twilio_whatsapp_bot.core.db.user_activities import UserActivities
 from twilio_whatsapp_bot.core.helpers import check_noun, check_number, \
-    check_phonenumber, check_str, check_email
+    check_phonenumber, check_str, check_email, get_logger
 from twilio_whatsapp_bot.core.utilies.functions import geolocate_user, \
     geolocate_place_from_user, get_list_days_to_reserve, generate_token
 from typing import Any
@@ -167,6 +166,8 @@ class Operation(object):
             return_ = check_noun(msg_2_check)
         elif self.op_ == OP_CHECK_EMAIL:
             return_ = check_email(msg_2_check)
+        # log action
+        get_logger().info("Operation {0} for the message '{1}'".format(self.op_, msg_2_check)) # noqa
         #
         return return_
 
@@ -181,6 +182,8 @@ class Operation(object):
         # if operation select in DB
         if IS_OP_SELECT:
             result_ = DB().select(operation)
+            # log action
+            get_logger().info("Operation select for user_token {} : OK".format(user_token)) # noqa
             i = 0
             for r in result_:
                 return_array.append(list_available_answers[i] + ". " + r[json_["column"]]) # noqa
@@ -191,6 +194,8 @@ class Operation(object):
             is_cldtr = IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE
             IS_OP_CALENDAR_LIST_DAYS_TO_RESERVE = False
             tmp_array = get_list_days_to_reserve("1") # noqa
+            # log action
+            get_logger().info("Operation calendar to book for user_token {} : OK".format(user_token)) # noqa
             for i in range(0, len(tmp_array)):
                 return_array.append(list_available_answers[i] + ". " + tmp_array[i]) # noqa
                 return_proposal[list_available_answers[i]] = tmp_array[i]
@@ -198,6 +203,8 @@ class Operation(object):
         elif IS_OP_GENERATE_QRCODE:
             # call generate_qrcode method from helpers
             url_qrcode = generate_token(user_token)
+            # log action
+            get_logger().info("Operation generate QR-code for user_token {} : OK".format(user_token)) # noqa
             IS_OP_GENERATE_QRCODE = False
         #
         return {
@@ -211,6 +218,8 @@ class Operation(object):
         self.parse(json_)
         #
         UserActivities().insert_data(user_token, json_["param"], response_msg)
+        # log action
+        get_logger().info("Operation save for params ('{0}', '{1}')".format(user_token, response_msg)) # noqa
         #
         return {
             "param": json_["param"]
@@ -224,7 +233,9 @@ class Operation(object):
                 business_name: str
                 ) -> Any:
         # self.parse(json_)
+        get_logger().info("Start finding location for user_token {0}: {1}".format(user_token, response_msg)) # noqa
         location = geolocate_user(api_key, response_msg, country)
+        get_logger().info("Locations found for the user_token " + user_token + ": ", location) # noqa
         around_user = None
         if location is not None and "lat" in location and "lng" in location:
             around_user = geolocate_place_from_user(
@@ -233,6 +244,8 @@ class Operation(object):
                 location["lat"],
                 location["lng"]
             )
+            # log action
+            get_logger().info("Search result around the user: ", around_user)
             # insert into user_activities
             UserActivities().insert_data(user_token, 'geolocate', response_msg)
         #
@@ -261,5 +274,7 @@ class Operation(object):
         # insert into user_calendar_events
         sql = "INSERT INTO user_calendar_events (user_token, person, event_date, start_time, end_time) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')".format(user_token, person, event_date, start_time, end_time) # noqa
         DB().insert_without_datas(sql)
+        # log action
+        get_logger().info("Operation calendar_add for the person '{0}' user_token {1} : OK".format(person, user_token)) # noqa
         #
         return
