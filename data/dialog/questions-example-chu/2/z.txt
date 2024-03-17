@@ -1,0 +1,2 @@
+Nos équipes vous attendent urgemment pour votre prise en charge. Veuillez vous munir de ce QR-code généré
+{"data": "file", "type": "image/png", "url": "{URL_QRCODE}"}

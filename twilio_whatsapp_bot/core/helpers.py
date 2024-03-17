@@ -1,8 +1,11 @@
 #!/usr/bin/python
 from config import Config
+import datetime
 from deep_translator import GoogleTranslator
 import glob
 import json
+import logging
+import logging.config
 import os
 from parse import parse
 from pathlib import Path
@@ -12,6 +15,18 @@ from unidecode import unidecode
 
 
 DEFAULT_CALLING_CODE = Config.DEFAULT_CALLING_CODE
+
+
+def get_logger() -> Any:
+    """Get the logger for this module."""
+    # get current date and convert it obj to string
+    # create a file object along with extension
+    log_file = "app-" + str(datetime.datetime.now().strftime("%Y-%m-%d")) + ".log" # noqa
+    logging.basicConfig(filename='./logs/' + log_file, filemode='a', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO) # noqa
+    # logging.config.fileConfig(fname='config.ini', disable_existing_loggers=False) # noqa
+    # Get the logger specified in the file
+    logger = logging.getLogger(__name__)
+    return logger
 
 
 def get_data_from_url(received_message: str, index: str) -> str:

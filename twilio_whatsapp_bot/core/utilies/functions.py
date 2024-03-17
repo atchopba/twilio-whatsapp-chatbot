@@ -124,9 +124,9 @@ def make_new_token() -> str:
 
 
 def update_payment_data(user_token, payment_token):
-    if UserPayments().select_data(user_token, payment_token):
+    if UserPayments().is_data_exists(user_token, payment_token):
         UserPayments().update_data(user_token, payment_token)
-        UserActivities().insert_data(user_token, 'update_payment', 'payment validated') # noqa
+        UserActivities().insert_data(user_token, 'update_payment with payment_token: ' + payment_token, 'payment validated') # noqa
         return {
             'status': 'OK',
             'message': 'La transaction a été  mise à jour'
@@ -158,5 +158,9 @@ def generate_token(user_token):
         qr.add_data(activity + '\n')
     # generate and save image on a web server
     img = qr.make_image(fill_color='black', back_color='white')
-    img.save(PATH_QRCODE + '/' + str(user_token) + '.png')
+    qrcode_path = PATH_QRCODE + '/' + str(user_token) + '.png'
+    img.save(qrcode_path)
+    # save in user_activities
+    UserActivities().insert_data(user_token, 'QRCODE generated', qrcode_path)
+    # return the url
     return URL_QRCODE + '/' + str(user_token) + '.png'

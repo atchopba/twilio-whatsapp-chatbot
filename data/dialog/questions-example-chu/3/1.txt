@@ -1,0 +1,2 @@
+Où êtes-vous à l'instant présent?  (indiquez la quartier/lieu, ville. Exemple: Don bosco, Kara)
+{"type": "map", "op": "geolocate"}

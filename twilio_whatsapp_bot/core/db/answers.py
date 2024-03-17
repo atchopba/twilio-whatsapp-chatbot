@@ -20,11 +20,4 @@ class Answers(DB):
 
         sql = "INSERT INTO answers (" + ",".join(insert_params) + ") "
         sql += "VALUES (" + ",".join(insert_values) + ")"
-        try:
-            self.connect()
-            with self.connection.cursor() as cursor:
-                cursor.execute(sql)
-                self.connection.commit()
-        except Exception as exception:
-            print("Erreur lors de l'execution : ", exception)
-        self.deconnect()
+        return self.insert_without_datas(sql)

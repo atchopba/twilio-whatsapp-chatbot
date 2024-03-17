@@ -318,7 +318,7 @@ def step_in_courtesy(response_msg: str) -> str:
     if not is_words_question or is_unique_question_folder:
         tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1])) # noqa
         # check if operation is save
-        save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
+        save_operation = get_operations_by_type(tmp_['operations_found'], 'save') # noqa
         if save_operation:
             is_save_question = Operation().is_run_save(save_operation)
         #
@@ -352,7 +352,7 @@ def step_in_courtesy(response_msg: str) -> str:
             is_words_question = False
             #
             tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step])) # noqa
-            save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
+            save_operation = get_operations_by_type(tmp_['operations_found'], 'save') # noqa
             is_save_question = Operation().is_run_save(save_operation)
             next_courtesy_content = tmp_['msg']
         #
@@ -385,8 +385,12 @@ def step_in_question(response_msg: str) -> str:
     current_file_content = tmp_['msg']
 
     # check if the operation is map location
-    tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
-    is_map_location = Operation().is_run_map(get_operations_by_type(tmp_2["operations_found"], 'map')) # noqa
+    try:
+        tmp_2 = get_operations_in_bot_dialog(get_file_content(list_files[current_step+1])) # noqa
+        is_map_location = Operation().is_run_map(get_operations_by_type(tmp_2["operations_found"], 'map')) # noqa
+    except IndexError:
+        is_map_location = False
+
     is_run_map = get_operations_by_type(operations, 'map')
 
     list_response_msg = [response_msg.lower(), response_msg.upper()]
