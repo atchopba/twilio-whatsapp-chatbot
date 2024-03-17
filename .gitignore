@@ -1,6 +1,7 @@
 .env
 *.pyc
 .venv
+app-*
 credentials.json
 out.json
 test*.py
