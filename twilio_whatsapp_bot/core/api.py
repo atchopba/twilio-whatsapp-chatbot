@@ -13,7 +13,6 @@ from twilio_whatsapp_bot.core.helpers import change_filepath, \
     available_answers, translate_msg, get_list_available_answer_run_out, \
     is_part, get_payment_token
 from typing import Any
-import logging
 
 
 LANG_FR = "fr"
@@ -319,7 +318,7 @@ def step_in_courtesy(response_msg: str) -> str:
     if not is_words_question or is_unique_question_folder:
         tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step + 1])) # noqa
         # check if operation is save
-        save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
+        save_operation = get_operations_by_type(tmp_['operations_found'], 'save') # noqa
         if save_operation:
             is_save_question = Operation().is_run_save(save_operation)
         #
@@ -353,7 +352,7 @@ def step_in_courtesy(response_msg: str) -> str:
             is_words_question = False
             #
             tmp_ = get_operations_in_bot_dialog(get_file_content(list_files[current_step])) # noqa
-            save_operation = get_operations_by_type(tmp_['operations_found'], 'save')
+            save_operation = get_operations_by_type(tmp_['operations_found'], 'save') # noqa
             is_save_question = Operation().is_run_save(save_operation)
             next_courtesy_content = tmp_['msg']
         #
