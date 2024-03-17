@@ -77,6 +77,6 @@ Now you can start interacting with the number set on Twilio.
 - For the chatbot to send multiple messages to the successively, you must use the  **|** like separator
 - No input check is made for the dialogue that is in the courtesy folder.
 - A dialog file containing a choice in the answer, the answer must be numbered from 1 in ascending order.
-- Some verification operations are done for the dialogue is in the file question: *check_noun*, *check_str*, *check_number*, *check_phonenumber*, *check_city*, *check_email*.
+- Some verification operations are done for the dialogue is in the file question: *check_noun*, *check_str*, *check_number*, *check_phonenumber*, *check_city*, *check_email*, *select*, *map*, *generate_qrcode*, *calendar*.
 - There is an operation that selects items in databases and cross-references as choices. You must well configure the database before.
 - Operations listed above don't work yet on dialogs listed in courtesy.
