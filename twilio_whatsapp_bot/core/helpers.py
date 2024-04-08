@@ -10,7 +10,7 @@ import os
 from parse import parse
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, List, Union
 from unidecode import unidecode
 
 
@@ -168,9 +168,19 @@ def available_answers(bot_dialog: str, trash: str = ".") -> Any:
     return return_
 
 
-def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Any:
-    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"] if is_response_alpha else ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"] # noqa
+def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Union[List[str], List[int]]:  # noqa
+    """
+    Returns a list of alphabetic characters or numeric strings based on the input parameter.  # noqa
+    
+    :param is_response_alpha: A boolean flag that determines the type of list to return.  # noqa
+                              If True, returns a list of alphabetic characters.
+                              If False, returns a list of numeric strings.
+    :return: A list of strings representing either alphabetic characters or numeric strings.  # noqa
+    """
+    if is_response_alpha:
+        return [chr(i) for i in range(ord('A'), ord('Z') + 1)]
+    else:
+        return [str(i) for i in range(1, 27)]
 
 
 def is_part(root: str, search: str):
