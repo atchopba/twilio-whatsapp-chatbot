@@ -67,14 +67,12 @@ def replace_words_in_content(file_content: str, word: str, replacement: str) -> 
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
-    tokens_ = file_content.split("|")
-    #
-    for i in range(0, len(tokens_)):
-        if tokens_[i].strip() != "":
-            tokens_[i] = tokens_[i].strip()
+    # Split the content by the pipe character and strip whitespace from each token # noqa
+    tokens = [token.strip() for token in file_content.split("|") if token.strip()] # noqa
+    # Return a dictionary with the results
     return {
-        "is_in_2_msg": len(tokens_) > 1,
-        "tokens": tokens_
+        "is_in_2_msg": len(tokens) > 1,
+        "tokens": tokens
     }
 
 
