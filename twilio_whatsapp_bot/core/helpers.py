@@ -59,11 +59,11 @@ def remove_accents(msg: str) -> str:
     return unidecode(msg)
 
 
-def replace_words_in_content(file_content: str, regex_: str, words: str) -> str: # noqa
-    regex_lower = regex_.lower()
-    regex_upper = regex_.upper()
-    return_ = file_content.replace(regex_lower, words)
-    return return_.replace(regex_upper, words)
+def replace_words_in_content(file_content: str, word: str, replacement: str) -> str: # noqa
+    # Create a regular expression pattern that matches the word in a case-insensitive manner # noqa
+    pattern = re.compile(re.escape(word), re.IGNORECASE)
+    # Use re.sub() to replace all occurrences of the pattern with the replacement word # noqa
+    return pattern.sub(replacement, file_content)
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
