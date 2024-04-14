@@ -10,7 +10,7 @@ import os
 from parse import parse
 from pathlib import Path
 import re
-from typing import Any
+from typing import Any, List, Union
 from unidecode import unidecode
 
 
@@ -59,22 +59,20 @@ def remove_accents(msg: str) -> str:
     return unidecode(msg)
 
 
-def replace_words_in_content(file_content: str, regex_: str, words: str) -> str: # noqa
-    regex_lower = regex_.lower()
-    regex_upper = regex_.upper()
-    return_ = file_content.replace(regex_lower, words)
-    return return_.replace(regex_upper, words)
+def replace_words_in_content(file_content: str, word: str, replacement: str) -> str: # noqa
+    # Create a regular expression pattern that matches the word in a case-insensitive manner # noqa
+    pattern = re.compile(re.escape(word), re.IGNORECASE)
+    # Use re.sub() to replace all occurrences of the pattern with the replacement word # noqa
+    return pattern.sub(replacement, file_content)
 
 
 def check_content_is_2_msg(file_content: str) -> Any:
-    tokens_ = file_content.split("|")
-    #
-    for i in range(0, len(tokens_)):
-        if tokens_[i].strip() != "":
-            tokens_[i] = tokens_[i].strip()
+    # Split the content by the pipe character and strip whitespace from each token # noqa
+    tokens = [token.strip() for token in file_content.split("|") if token.strip()] # noqa
+    # Return a dictionary with the results
     return {
-        "is_in_2_msg": len(tokens_) > 1,
-        "tokens": tokens_
+        "is_in_2_msg": len(tokens) > 1,
+        "tokens": tokens
     }
 
 
@@ -168,9 +166,19 @@ def available_answers(bot_dialog: str, trash: str = ".") -> Any:
     return return_
 
 
-def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Any:
-    return ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"] if is_response_alpha else ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26"] # noqa
+def get_list_available_answer_run_out(is_response_alpha: bool = False) -> Union[List[str], List[int]]:  # noqa
+    """
+    Returns a list of alphabetic characters or numeric strings based on the input parameter.  # noqa
+    
+    :param is_response_alpha: A boolean flag that determines the type of list to return.  # noqa
+                              If True, returns a list of alphabetic characters.
+                              If False, returns a list of numeric strings.
+    :return: A list of strings representing either alphabetic characters or numeric strings.  # noqa
+    """
+    if is_response_alpha:
+        return [chr(i) for i in range(ord('A'), ord('Z') + 1)]
+    else:
+        return [str(i) for i in range(1, 27)]
 
 
 def is_part(root: str, search: str):
