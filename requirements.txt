@@ -2,7 +2,7 @@ flask==2.3.2
 parse==1.19.0
 pathlib2==2.3.7
 python-dotenv==0.20.0
-PyMySQL==1.0.3
+PyMySQL==1.1.1
 qrcode
 requests==2.31.0
 twilio==7.14.2
