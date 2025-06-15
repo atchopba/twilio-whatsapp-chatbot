@@ -4,7 +4,7 @@ pathlib2==2.3.7
 python-dotenv==0.20.0
 PyMySQL==1.1.1
 qrcode
-requests==2.32.0
+requests==2.32.4
 twilio==7.14.2
 unidecode==1.3.6
 deep-translator==1.11.0
