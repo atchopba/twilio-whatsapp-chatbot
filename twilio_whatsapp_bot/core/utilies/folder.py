@@ -20,6 +20,8 @@ class Folder(object):
             list_A = data_[column_array].split("|")
             res = 0
             for key in list_A:
+                if key is None:
+                    continue
                 tmp_key = str(key).strip()
                 res += 1 if tmp_key in sentence else 0
             if res > 0 and res_index < res:

@@ -51,6 +51,10 @@ def geolocate_user(api_key: str, search_place: str, country: str) -> Any:
     json_response = json.loads(response.text)
     location = None
     #
+    if json_response is None:
+        return None
+
+    
     if "candidates" in json_response and len(json_response["candidates"]) > 0:
         candidates = json_response["candidates"][0]
         if "geometry" in candidates:
