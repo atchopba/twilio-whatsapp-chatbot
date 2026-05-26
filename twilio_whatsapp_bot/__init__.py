@@ -9,7 +9,6 @@ def create_app():
     #
     with app.app_context():
         app.register_blueprint(routes.main_bp)
-        #
         # if app.config["FLASK_ENV"] == "development":
         #    pass
         #
