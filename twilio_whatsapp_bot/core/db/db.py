@@ -69,6 +69,10 @@ class DB(object):
         self.connect()
         error_msg = ""
         result = []
+        if sql is None:
+            return ResultSelectQuery([], "SQL query is None")
+
+        
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(sql)

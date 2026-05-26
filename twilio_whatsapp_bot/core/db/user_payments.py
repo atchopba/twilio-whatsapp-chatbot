@@ -10,6 +10,8 @@ class UserPayments(DB):
     def is_data_exists(self, user_token: str, payment_token: str) -> bool:
         sql = "SELECT * FROM user_payments WHERE is_confirmed <> '1' AND user_token = '{0}' AND payment_token = '{1}'".format(user_token, payment_token) # noqa
         rows = self.select(sql)
+        if user_token is None or payment_token is None:
+            return False
         return len(rows) > 0 if rows else -1
 
     def update_data(self, user_token: str, payment_token: str) -> int:
