@@ -7,7 +7,6 @@ from typing import Any
 class Answers(DB):
 
     def __init__(self):
-        pass
 
     def insert_data(self, datas: Any) -> Any:
         insert_params = []
