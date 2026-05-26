@@ -19,5 +19,7 @@ class UserActivities(DB):
 
     def get_by_user_token(self, user_token: str) -> Any:
         r = "SELECT * FROM {0} WHERE user_token='{1}'".format(self.table_, user_token) # noqa
+        if user_token is None:
+            return []
         cursor = self.execute_query(r)
         return [row['action_value_1'] for row in cursor.result] # noqa
